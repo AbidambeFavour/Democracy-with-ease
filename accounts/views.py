@@ -247,18 +247,25 @@ def landing_page(request):
     if request.user.is_authenticated:
         return redirect('accounts:dashboard')
     
-    # Get some featured polls for display
-    featured_polls = Poll.objects.annotate(
-        vote_count=Count('vote')
-    ).filter(
-        end_date__gt=timezone.now(),
-        start_date__lte=timezone.now()
-    ).order_by('-vote_count')[:6]
-    
-    # Get statistics
-    total_users = User.objects.count()
-    total_polls = Poll.objects.count()
-    total_votes = Vote.objects.count()
+    # Get some featured polls for display with error handling
+    try:
+        featured_polls = Poll.objects.annotate(
+            vote_count=Count('vote')
+        ).filter(
+            end_date__gt=timezone.now(),
+            start_date__lte=timezone.now()
+        ).order_by('-vote_count')[:6]
+        
+        # Get statistics
+        total_users = User.objects.count()
+        total_polls = Poll.objects.count()
+        total_votes = Vote.objects.count()
+    except Exception:
+        # Database not ready yet - use empty defaults
+        featured_polls = []
+        total_users = 0
+        total_polls = 0
+        total_votes = 0
     
     context = {
         'featured_polls': featured_polls,
