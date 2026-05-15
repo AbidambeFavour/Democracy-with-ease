@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block title %}My Votes - SimpleVote{% endblock %}
+
+{% block extra_css %}
+<style>
+    .votes-header {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid var(--line);
+        text-align: center;
+    }
+    
+    .votes-header h1 {
+        color: var(--heading);
+        margin-bottom: 8px;
+    }
+    
+    .votes-header p {
+        color: var(--text-secondary);
+        margin-bottom: 0;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 32px;
+    }
+    
+    .stat-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--line);
+        text-align: center;
+        transition: transform 0.2s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--primary);
+        margin-bottom: 8px;
+    }
+    
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .votes-section {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid var(--line);
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+    }
+    
+    .vote-item {
+        display: flex;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--line);
+    }
+    
+    .vote-item:last-child {
+        border-bottom: none;
+    }
+    
+    .vote-info {
+        flex: 1;
+    }
+    
+    .vote-poll-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+    
+    .vote-details {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .vote-choice {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-right: 12px;
+    }
+    
+    .vote-time {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        margin-left: auto;
+    }
+    
+    .available-polls {
+        display: grid;
+        gap: 12px;
+    }
+    
+    .poll-card {
+        background: var(--surface);
+        border-radius: 8px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        transition: background 0.2s;
+    }
+    
+    .poll-card:hover {
+        background: var(--surface-hover);
+    }
+    
+    .poll-card-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    
+    .poll-card-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .btn-vote {
+        background: var(--primary);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    
+    .btn-vote:hover {
+        background: var(--primary-dark);
+        color: white;
+    }
+    
+    .category-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .category-stat {
+        background: var(--surface);
+        border-radius: 20px;
+        padding: 8px 16px;
+        border: 1px solid var(--line);
+        font-size: 0.9rem;
+    }
+    
+    .category-name {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .category-count {
+        color: var(--primary);
+        font-weight: 600;
+        margin-left: 4px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-secondary);
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--text-muted);
+        margin-bottom: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="votes-header">
+        <h1><i class="fas fa-vote-yea"></i> My Votes</h1>
+        <p>Track your voting history and discover new polls to participate in</p>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_votes }}</div>
+            <div class="stat-label">Total Votes Cast</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ available_polls|length }}</div>
+            <div class="stat-label">Available Polls</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ category_stats|length }}</div>
+            <div class="stat-label">Categories Voted</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ monthly_stats|length }}</div>
+            <div class="stat-label">Months Active</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Recent Voting Activity -->
+            <div class="votes-section">
+                <h2 class="section-title">Recent Voting Activity</h2>
+                {% if recent_votes %}
+                    {% for vote in recent_votes %}
+                    <div class="vote-item">
+                        <div class="vote-info">
+                            <div class="vote-poll-title">
+                                <a href="{% url 'voting:poll_detail' vote.poll.pk %}">{{ vote.poll.title }}</a>
+                            </div>
+                            <div class="vote-details">
+                                <span class="vote-choice">{{ vote.choice.choice_text }}</span>
+                                <span>{{ vote.poll.category.name|default:"General" }}</span>
+                                <span>by {{ vote.poll.creator.username|default:"Unknown" }}</span>
+                            </div>
+                        </div>
+                        <div class="vote-time">{{ vote.voted_at|timesince }} ago</div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if total_votes > 10 %}
+                    <div style="text-align: center; margin-top: 20px;">
+                        <a href="#" class="btn btn-secondary">View All {{ total_votes }} Votes</a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-vote-yea"></i>
+                        <h3>No Votes Yet</h3>
+                        <p>You haven't voted in any polls yet. Start participating in polls below!</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Available Polls -->
+            <div class="votes-section">
+                <h2 class="section-title">Available Polls</h2>
+                {% if available_polls %}
+                    <div class="available-polls">
+                        {% for poll in available_polls %}
+                        <div class="poll-card">
+                            <div class="poll-card-title">
+                                <a href="{% url 'voting:poll_detail' poll.pk %}">{{ poll.title }}</a>
+                            </div>
+                            <div class="poll-card-meta">
+                                <span>{{ poll.category.name|default:"General" }}</span>
+                                <a href="{% url 'voting:poll_detail' poll.pk %}" class="btn-vote">Vote Now</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>All Caught Up!</h3>
+                        <p>You've voted in all available polls. Check back later for new ones!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Voting by Category -->
+            {% if category_stats %}
+            <div class="votes-section">
+                <h2 class="section-title">Voting by Category</h2>
+                <div class="category-stats">
+                    {% for stat in category_stats %}
+                    <div class="category-stat">
+                        <span class="category-name">{{ stat.poll__category__name|default:"General" }}</span>
+                        <span class="category-count">{{ stat.vote_count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="votes-section">
+                <h2 class="section-title">Quick Actions</h2>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="{% url 'voting:poll_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-list"></i> Browse All Polls
+                    </a>
+                    <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                    <a href="{% url 'accounts:profile' request.user.username %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-user"></i> My Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

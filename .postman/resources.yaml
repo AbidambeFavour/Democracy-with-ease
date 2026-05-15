@@ -1,0 +1,10 @@
+# Use this workspace to collaborate
+workspace:
+  id: cc9af40b-8bb3-4136-819d-c4ba5a4737ef
+
+localResources:
+  collections:
+    - ..\SimpleVote_Postman_Collection.json
+cloudResources:
+  collections:
+    ..\postman\collections\SimpleVote API Collection: f6de9a49-133a-43ae-a556-6f8c240d78d8

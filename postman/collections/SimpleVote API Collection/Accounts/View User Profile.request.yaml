@@ -1,0 +1,37 @@
+$kind: http-request
+name: View User Profile
+description: View the public profile page of any user by their username. Replace `{{username}}` with the target user's username.
+url: '{{baseUrl}}/accounts/profile/{{username}}/'
+method: GET
+pathVariables:
+  - key: username
+    value: '{{username}}'
+    description: Username of the profile to view (set via environment variable)
+order: 6000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Existing user: renders profile page (200)
+      // Non-existent user: 404
+      pm.test("View profile returns 200 or 404", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 404]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(3000);
+      });
+
+      if (pm.response.code === 200) {
+          pm.test("Response is HTML", function () {
+              pm.expect(pm.response.headers.get("Content-Type")).to.include("text/html");
+          });
+
+          pm.test("Profile page contains username", function () {
+              const body = pm.response.text();
+              const username = pm.variables.get("username");
+              if (username) {
+                  pm.expect(body).to.include(username);
+              }
+          });
+      }

@@ -1,1653 +1,338 @@
 {% extends 'base.html' %}
 
-{% block title %}SimpleVote — Democratic Voting for Everyone{% endblock %}
+{% block title %}SimpleVote - Secure Voting{% endblock %}
 
 {% block extra_css %}
-<!-- Font Awesome 6 (Free) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<!-- Google Fonts: Inter + Playfair Display -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
-    /* ===== RESET & BASE STYLES ===== */
-    /* Force override any base template styles */
-    body, body.landing-page, html body {
-        background: transparent !important;
-        font-family: 'Inter', sans-serif !important;
-        color: #1a1a2e !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        min-height: 100vh !important;
-    }
-    
-    /* Set background on html instead to allow animated background to show */
-    html {
-        background: #4a5568 !important;
-    }
-
-    /* Remove any white backgrounds/containers from base template */
-    .container, .container-fluid, main, .main-content, [class*="container"] {
-        background: transparent !important;
-        max-width: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-    }
-    
-    /* Ensure full width layout */
-    html, body {
-        overflow-x: hidden !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* ===== ANIMATED BACKGROUND ===== */
-    .animated-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        overflow: hidden;
-        pointer-events: none;
-    }
-
-    .animated-bg::before {
-        content: '';
-        position: absolute;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(
-            45deg,
-            rgba(255, 255, 255, 0.15) 0%,
-            rgba(255, 255, 255, 0.1) 25%,
-            transparent 50%,
-            rgba(255, 255, 255, 0.1) 75%,
-            transparent 100%
-        );
-        animation: wave 20s infinite linear;
-    }
-
-    @keyframes wave {
-        0% { transform: translate(-30%, -30%) rotate(0deg); }
-        100% { transform: translate(30%, 30%) rotate(5deg); }
-    }
-
-    /* ===== FLOATING PARTICLES ===== */
-    .particles {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        pointer-events: none;
-    }
-
-    .particle {
-        position: absolute;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        animation: float 20s infinite ease-in-out;
-    }
-
-    .particle:nth-child(1) {
-        width: 400px;
-        height: 400px;
-        top: 5%;
-        left: 5%;
-        animation-duration: 25s;
-    }
-    
-    .particle:nth-child(2) {
-        width: 300px;
-        height: 300px;
-        bottom: 10%;
-        right: 5%;
-        animation-duration: 20s;
-        animation-delay: -5s;
-    }
-    
-    .particle:nth-child(3) {
-        width: 200px;
-        height: 200px;
-        top: 30%;
-        right: 20%;
-        animation-duration: 15s;
-        animation-delay: -2s;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translate(0, 0) rotate(0deg); }
-        25% { transform: translate(-30px, 30px) rotate(5deg); }
-        50% { transform: translate(30px, -20px) rotate(-5deg); }
-        75% { transform: translate(20px, 30px) rotate(3deg); }
-    }
-
-    /* ===== MAIN CONTAINER ===== */
-    .landing-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0;
-        position: relative;
-        background: transparent;
-        width: 100%;
-    }
-
-    /* ===== NAVIGATION ===== */
-    nav {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 30px 0;
-        animation: slideDown 1s ease-out;
-        background: transparent;
-    }
-
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .logo-icon {
-        width: 50px;
-        height: 50px;
-        background: white;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        color: #667eea;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        transform: rotate(-5deg);
-        transition: all 0.3s ease;
-    }
-
-    .logo:hover .logo-icon {
-        transform: rotate(0deg) scale(1.1);
-    }
-
-    .logo-text {
-        font-size: 28px;
-        font-weight: 800;
-        color: white;
-        letter-spacing: -0.5px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .logo-text span {
-        color: #ffd93d;
-        font-weight: 400;
-        font-family: 'Playfair Display', serif;
-    }
-
-    .nav-links {
-        display: flex;
-        gap: 40px;
-        align-items: center;
-    }
-
-    .nav-links a {
-        color: white;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 16px;
-        opacity: 0.9;
-        transition: all 0.3s ease;
-        position: relative;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-    }
-
-    .nav-links a::after {
-        content: '';
-        position: absolute;
-        bottom: -5px;
-        left: 0;
-        width: 0;
-        height: 2px;
-        background: white;
-        transition: width 0.3s ease;
-    }
-
-    .nav-links a:hover::after {
-        width: 100%;
-    }
-
-    .nav-links a:hover {
-        opacity: 1;
-        transform: translateY(-2px);
-    }
-
-    .btn-primary {
-        background: white !important;
-        color: #667eea !important;
-        padding: 12px 30px !important;
-        border-radius: 50px !important;
-        font-weight: 600 !important;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
-        transition: all 0.3s ease !important;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-3px) !important;
-        box-shadow: 0 15px 30px rgba(0,0,0,0.3) !important;
-    }
-
-    /* ===== HERO SECTION ===== */
-    .hero {
+    .landing-page {
         display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
-        gap: 60px;
-        align-items: center;
-        padding: 40px 0 80px;
-        animation: fadeInUp 1.2s ease-out;
+        gap: 28px;
     }
 
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(40px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .hero-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.9fr;
+        gap: 28px;
+        align-items: stretch;
     }
 
-    .hero-content h1 {
-        font-size: 70px;
-        font-weight: 800;
-        line-height: 1.1;
-        color: white;
-        margin-bottom: 25px;
-        letter-spacing: -2px;
-        text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+    .hero-copy,
+    .hero-preview,
+    .feature-card,
+    .step-card,
+    .cta-panel,
+    .footer-grid {
+        background: var(--surface);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--surface-shadow);
+        backdrop-filter: blur(16px);
     }
 
-    .hero-content h1 .highlight {
-        background: linear-gradient(135deg, #ffd93d, #ff9a3d);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        font-family: 'Playfair Display', serif;
-        font-weight: 700;
-        text-shadow: none;
+    .hero-copy {
+        padding: 40px;
     }
 
-    .hero-description {
-        font-size: 20px;
-        color: rgba(255,255,255,0.95);
-        margin-bottom: 40px;
-        max-width: 600px;
-        line-height: 1.6;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    .hero-copy h1 {
+        font-size: clamp(2.6rem, 5vw, 4.6rem);
+        margin: 18px 0 16px;
+    }
+
+    .hero-copy p {
+        max-width: 640px;
+        font-size: 1.05rem;
+    }
+
+    .hero-actions,
+    .cta-actions {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 28px;
+    }
+
+    .hero-actions a,
+    .cta-actions a {
+        padding: 14px 20px;
+    }
+
+    .hero-stats,
+    .feature-grid,
+    .steps-grid,
+    .footer-grid {
+        display: grid;
+        gap: 18px;
     }
 
     .hero-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: 28px;
+    }
+
+    .stat-chip {
+        padding: 18px;
+        border-radius: var(--radius-md);
+        background: var(--chip-bg);
+        border: 1px solid var(--line);
+    }
+
+    .stat-chip strong {
+        display: block;
+        color: var(--heading);
+        font-size: 1.5rem;
+    }
+
+    .hero-preview {
+        padding: 28px;
+    }
+
+    .preview-card {
+        display: grid;
+        gap: 16px;
+    }
+
+    .preview-header,
+    .preview-option,
+    .preview-footer {
         display: flex;
-        gap: 50px;
-        margin-bottom: 50px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
     }
 
-    .stat-item {
-        text-align: center;
+    .preview-option {
+        padding: 16px;
+        border-radius: var(--radius-md);
+        background: var(--panel-muted);
+        border: 1px solid var(--line);
     }
 
-    .stat-number {
-        font-size: 44px;
-        font-weight: 800;
-        color: white;
-        line-height: 1;
-        margin-bottom: 8px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    .preview-option.selected {
+        border-color: rgba(37, 99, 235, 0.34);
+        background: var(--accent-soft);
     }
 
-    .stat-label {
-        font-size: 14px;
-        color: rgba(255,255,255,0.9);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-weight: 500;
-    }
-
-    .hero-buttons {
+    .preview-label {
         display: flex;
-        gap: 20px;
-    }
-
-    .btn-hero {
-        padding: 18px 45px;
-        border-radius: 50px;
+        align-items: center;
+        gap: 12px;
+        color: var(--heading);
         font-weight: 600;
-        font-size: 18px;
-        text-decoration: none;
-        transition: all 0.3s ease;
+    }
+
+    .preview-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid rgba(37, 99, 235, 0.48);
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        border: none;
-        cursor: pointer;
+        justify-content: center;
     }
 
-    .btn-hero-primary {
-        background: #ffd93d !important;
-        color: #1a1a2e !important;
-        box-shadow: 0 10px 25px rgba(255, 217, 61, 0.4) !important;
-    }
-
-    .btn-hero-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(255, 217, 61, 0.5) !important;
-    }
-
-    .btn-hero-secondary {
-        background: rgba(255,255,255,0.15) !important;
-        color: white !important;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.3) !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
-    }
-
-    .btn-hero-secondary:hover {
-        background: rgba(255,255,255,0.25) !important;
-        transform: translateY(-3px);
-        border-color: rgba(255,255,255,0.5) !important;
-    }
-
-    /* ===== DEMO CARD ===== */
-    .hero-image {
-        position: relative;
-    }
-
-    .demo-card {
-        background: rgba(255,255,255,0.98);
-        backdrop-filter: blur(10px);
-        border-radius: 30px;
-        padding: 30px;
-        box-shadow: 0 30px 50px rgba(0,0,0,0.3);
-        transform: perspective(1000px) rotateY(-5deg) rotateX(3deg);
-        animation: float-card 6s infinite ease-in-out;
-        position: relative;
-        overflow: hidden;
-        border: 2px solid rgba(255,255,255,0.3);
-    }
-
-    @keyframes float-card {
-        0%, 100% { transform: perspective(1000px) rotateY(-5deg) rotateX(3deg) translateY(0); }
-        50% { transform: perspective(1000px) rotateY(-5deg) rotateX(3deg) translateY(-15px); }
-    }
-
-    .demo-card::before {
+    .preview-option.selected .preview-dot::after {
         content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        animation: shine 8s infinite;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--primary);
     }
 
-    @keyframes shine {
-        0% { left: -100%; }
-        20% { left: 100%; }
-        100% { left: 100%; }
+    .feature-grid,
+    .steps-grid,
+    .footer-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    .demo-header {
+    .feature-card,
+    .step-card {
+        padding: 28px;
+    }
+
+    .feature-card i,
+    .step-card i {
+        font-size: 1.3rem;
+        color: var(--accent-text);
+        margin-bottom: 14px;
+    }
+
+    .feature-card h3,
+    .step-card h3 {
+        margin-bottom: 10px;
+    }
+
+    .cta-panel {
+        padding: 36px;
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 20px;
-        border-bottom: 2px solid #eef2f6;
-    }
-
-    .demo-title {
-        font-weight: 700;
-        font-size: 18px;
-        color: #2d3748;
-    }
-
-    .demo-badge {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        padding: 6px 16px;
-        border-radius: 50px;
-        font-size: 12px;
-        font-weight: 600;
-        box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
-    }
-
-    .demo-options {
-        margin: 25px 0;
-    }
-
-    .demo-option {
-        display: flex;
-        align-items: center;
-        padding: 15px;
-        background: #f8fafd;
-        border-radius: 12px;
-        margin-bottom: 10px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        border: 1px solid transparent;
-    }
-
-    .demo-option:hover {
-        background: #ffffff;
-        border-color: #667eea;
-        transform: translateX(5px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.15);
-    }
-
-    .demo-radio {
-        width: 22px;
-        height: 22px;
-        border: 2px solid #667eea;
-        border-radius: 50%;
-        margin-right: 15px;
-        position: relative;
-    }
-
-    .demo-radio.selected::after {
-        content: '';
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        width: 10px;
-        height: 10px;
-        background: #667eea;
-        border-radius: 50%;
-    }
-
-    .demo-option-text {
-        flex: 1;
-        font-weight: 500;
-        color: #2d3748;
-    }
-
-    .demo-percentage {
-        font-weight: 700;
-        color: #667eea;
-        background: rgba(102, 126, 234, 0.1);
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 14px;
-    }
-
-    .demo-vote-btn {
-        width: 100%;
-        padding: 16px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 16px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .demo-vote-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 15px 25px rgba(102, 126, 234, 0.4);
-    }
-
-    /* ===== FEATURES SECTION ===== */
-    .features {
-        padding: 100px 0;
-        text-align: center;
-    }
-
-    .section-title {
-        font-size: 48px;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 20px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .section-subtitle {
-        font-size: 18px;
-        color: rgba(255,255,255,0.95);
-        max-width: 700px;
-        margin: 0 auto 60px;
-        line-height: 1.7;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-    }
-
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 30px;
-    }
-
-    .feature-card {
-        background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-        padding: 40px 30px;
-        border-radius: 30px;
-        color: white;
-        transition: all 0.4s ease;
-        animation: fadeInUp 0.8s ease-out forwards;
-        opacity: 0;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-    }
-
-    .feature-card:nth-child(1) { animation-delay: 0.1s; }
-    .feature-card:nth-child(2) { animation-delay: 0.3s; }
-    .feature-card:nth-child(3) { animation-delay: 0.5s; }
-    .feature-card:nth-child(4) { animation-delay: 0.7s; }
-
-    .feature-card:hover {
-        transform: translateY(-15px);
-        background: rgba(255,255,255,0.15);
-        border-color: rgba(255,255,255,0.4);
-        box-shadow: 0 25px 45px rgba(0,0,0,0.3);
-    }
-
-    .feature-icon {
-        width: 90px;
-        height: 90px;
-        background: rgba(255,255,255,0.15);
-        border-radius: 25px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 40px;
-        margin: 0 auto 25px;
-        transition: all 0.4s ease;
-        color: white;
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .feature-card:hover .feature-icon {
-        transform: scale(1.1) rotate(5deg);
-        background: rgba(255,255,255,0.25);
-        border-color: rgba(255,255,255,0.4);
-    }
-
-    .feature-title {
-        font-size: 24px;
-        font-weight: 700;
-        margin-bottom: 15px;
-        color: white;
-    }
-
-    .feature-description {
-        font-size: 15px;
-        opacity: 0.9;
-        line-height: 1.7;
-        color: rgba(255,255,255,0.95);
-    }
-
-    /* ===== HOW IT WORKS ===== */
-    .how-it-works {
-        padding: 80px 0;
-    }
-
-    .steps {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 50px;
-        margin-top: 60px;
-    }
-
-    .step {
-        text-align: center;
-        color: white;
-        position: relative;
-    }
-
-    .step:not(:last-child)::after {
-        content: '→';
-        position: absolute;
-        top: 40px;
-        right: -30px;
-        font-size: 48px;
-        color: rgba(255,255,255,0.5);
-        font-weight: 300;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .step-number {
-        width: 90px;
-        height: 90px;
-        background: rgba(255,255,255,0.15);
-        border: 3px solid rgba(255,255,255,0.3);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 36px;
-        font-weight: 700;
-        margin: 0 auto 30px;
-        transition: all 0.4s ease;
-        color: white;
-        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-    }
-
-    .step:hover .step-number {
-        transform: scale(1.15);
-        background: rgba(255,255,255,0.25);
-        border-color: white;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    }
-
-    .step-title {
-        font-size: 26px;
-        font-weight: 700;
-        margin-bottom: 15px;
-        color: #ffffff !important;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    }
-
-    .step-description {
-        opacity: 1 !important;
-        font-size: 16px;
-        line-height: 1.7;
-        color: #ffffff !important;
-        max-width: 280px;
-        margin: 0 auto;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    }
-    
-    /* Force override base template conflicts */
-    .how-it-works .step-title,
-    .how-it-works .step-description {
-        color: #ffffff !important;
-    }
-
-    /* ===== CTA SECTION ===== */
-    .cta {
-        background: white !important;
-        border-radius: 60px;
-        padding: 80px 60px;
-        text-align: center;
-        margin: 80px 0;
-        box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-    }
-
-    .cta h2 {
-        font-size: 48px;
-        color: #1a1a2e;
-        margin-bottom: 20px;
-        font-weight: 800;
-    }
-
-    .cta p {
-        font-size: 18px;
-        color: #4a4a6a;
-        max-width: 700px;
-        margin: 0 auto 40px;
-        line-height: 1.7;
-    }
-
-    .cta-buttons {
-        display: flex;
         gap: 20px;
-        justify-content: center;
+        background: var(--accent-soft);
     }
 
-    .btn-cta-primary {
-        background: linear-gradient(135deg, #667eea, #764ba2) !important;
-        color: white !important;
-        padding: 18px 50px !important;
-        border-radius: 50px !important;
-        text-decoration: none !important;
-        font-weight: 600 !important;
-        font-size: 18px !important;
-        transition: all 0.3s ease !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 10px !important;
-        border: none !important;
-        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4) !important;
+    .footer-grid {
+        padding: 28px;
     }
 
-    .btn-cta-primary:hover {
-        transform: translateY(-3px) !important;
-        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.5) !important;
-    }
-
-    .btn-cta-secondary {
-        background: #f0f4f9 !important;
-        color: #1a1a2e !important;
-        padding: 18px 50px !important;
-        border-radius: 50px !important;
-        text-decoration: none !important;
-        font-weight: 600 !important;
-        font-size: 18px !important;
-        transition: all 0.3s ease !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 10px !important;
-        border: none !important;
-        box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
-    }
-
-    .btn-cta-secondary:hover {
-        background: #e8ecf3 !important;
-        transform: translateY(-3px) !important;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
-    }
-
-    /* ===== ABOUT SECTION ===== */
-    .about {
-        padding: 100px 0;
-        background: rgba(255,255,255,0.05);
-        backdrop-filter: blur(10px);
-        border-radius: 30px;
-        margin: 50px 40px;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .about-content {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 60px;
-        align-items: start;
-    }
-
-    .about-text h3 {
-        font-size: 28px;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 20px;
-    }
-
-    .about-text p {
-        color: rgba(255,255,255,0.9);
-        font-size: 16px;
-        line-height: 1.8;
-        margin-bottom: 20px;
-    }
-
-    .about-values {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 30px;
-        margin-top: 40px;
-    }
-
-    .value-item {
-        text-align: center;
-        padding: 30px 20px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 20px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-        transition: all 0.3s ease;
-    }
-
-    .value-item:hover {
-        transform: translateY(-5px);
-        background: rgba(255,255,255,0.15);
-    }
-
-    .value-item i {
-        font-size: 32px;
-        color: #ffd93d;
-        margin-bottom: 15px;
-    }
-
-    .value-item h4 {
-        color: white;
-        font-size: 18px;
-        font-weight: 600;
+    .footer-grid h4 {
         margin-bottom: 10px;
     }
 
-    .value-item p {
-        color: rgba(255,255,255,0.8);
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    .about-stats {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .about-stat {
-        background: rgba(255,255,255,0.1);
-        padding: 30px;
-        border-radius: 20px;
-        text-align: center;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-        transition: all 0.3s ease;
-    }
-
-    .about-stat:hover {
-        transform: translateY(-5px);
-        background: rgba(255,255,255,0.15);
-    }
-
-    .about-stat-number {
-        font-size: 36px;
-        font-weight: 800;
-        color: #ffd93d;
-        margin-bottom: 5px;
-    }
-
-    .about-stat-label {
-        color: rgba(255,255,255,0.9);
-        font-size: 14px;
-        font-weight: 500;
-    }
-
-    /* ===== CONTACT SECTION ===== */
-    .contact {
-        padding: 100px 0;
-    }
-
-    .contact-content {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 60px;
-        align-items: start;
-    }
-
-    .contact-info {
-        display: flex;
-        flex-direction: column;
-        gap: 30px;
-    }
-
-    .contact-item {
-        display: flex;
-        align-items: start;
-        gap: 20px;
-        padding: 30px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 20px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-        transition: all 0.3s ease;
-    }
-
-    .contact-item:hover {
-        transform: translateY(-5px);
-        background: rgba(255,255,255,0.15);
-    }
-
-    .contact-icon {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        color: white;
-        flex-shrink: 0;
-    }
-
-    .contact-details h4 {
-        color: white;
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-
-    .contact-details p {
-        color: rgba(255,255,255,0.8);
-        font-size: 14px;
-        line-height: 1.6;
-        margin-bottom: 4px;
-    }
-
-    .contact-form {
-        background: rgba(255,255,255,0.1);
-        padding: 40px;
-        border-radius: 25px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .form {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        background: rgba(255,255,255,0.1);
-        border: 2px solid rgba(255,255,255,0.2);
-        border-radius: 15px;
-        padding: 15px 20px;
-        color: white;
-        font-size: 16px;
-        transition: all 0.3s ease;
-    }
-
-    .form-group input::placeholder,
-    .form-group textarea::placeholder {
-        color: rgba(255,255,255,0.6);
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: #ffd93d;
-        background: rgba(255,255,255,0.15);
-    }
-
-    .form-group select {
-        cursor: pointer;
-    }
-
-    .form-group select option {
-        background: #4a5568;
-        color: white;
-    }
-
-    .btn-submit {
-        background: linear-gradient(135deg, #ffd93d, #f6ad55);
-        color: #2d3748;
-        border: none;
-        border-radius: 15px;
-        padding: 15px 30px;
-        font-weight: 700;
-        font-size: 16px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 25px rgba(255, 217, 61, 0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .btn-submit:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(255, 217, 61, 0.4);
-    }
-
-    /* ===== FOOTER ===== */
-    footer {
-        padding: 60px 0 30px;
-        background: transparent !important;
-        border-top: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .footer-content {
-        display: grid;
-        grid-template-columns: 2fr 1fr 1fr 1fr;
-        gap: 60px;
-        margin-bottom: 50px;
-    }
-
-    .footer-logo {
-        color: white;
-        font-size: 26px;
-        font-weight: 800;
-        margin-bottom: 20px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .footer-logo span {
-        color: #ffd93d;
-        font-family: 'Playfair Display', serif;
-    }
-
-    .footer-about {
-        color: rgba(255,255,255,0.9);
-        font-size: 14px;
-        line-height: 1.8;
-        margin-bottom: 25px;
-        max-width: 300px;
-    }
-
-    .social-links {
-        display: flex;
-        gap: 15px;
-    }
-
-    .social-link {
-        width: 44px;
-        height: 44px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
+    .footer-grid a {
+        color: var(--accent-text);
         text-decoration: none;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(255,255,255,0.2);
-        font-size: 18px;
     }
 
-    .social-link:hover {
-        background: white;
-        color: #667eea;
-        transform: translateY(-5px);
-        border-color: white;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    .footer-grid a:hover {
+        color: #fff;
     }
 
-    .footer-links h4 {
-        color: white;
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 25px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-    }
-
-    .footer-links ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .footer-links li {
-        margin-bottom: 12px;
-    }
-
-    .footer-links a {
-        color: rgba(255,255,255,0.8);
-        text-decoration: none;
-        transition: all 0.3s ease;
-        font-size: 14px;
-    }
-
-    .footer-links a:hover {
-        color: white;
-        padding-left: 8px;
-        opacity: 1;
-    }
-
-    .copyright {
-        text-align: center;
-        color: rgba(255,255,255,0.7);
-        font-size: 14px;
-        padding-top: 30px;
-        border-top: 1px solid rgba(255,255,255,0.2);
-    }
-
-    /* ===== RESPONSIVE DESIGN ===== */
-    @media (max-width: 1200px) {
-        .hero-content h1 {
-            font-size: 56px;
-        }
-        
-        .features-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .footer-content {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .step:not(:last-child)::after {
-            display: none;
-        }
-    }
-
-    @media (max-width: 992px) {
-        .hero {
+    @media (max-width: 980px) {
+        .hero-grid,
+        .feature-grid,
+        .steps-grid,
+        .footer-grid {
             grid-template-columns: 1fr;
-            text-align: center;
-            gap: 40px;
         }
-        
-        .hero-content h1 {
-            font-size: 52px;
-        }
-        
-        .hero-description {
-            margin: 0 auto 30px;
-        }
-        
+
         .hero-stats {
-            justify-content: center;
-        }
-        
-        .hero-buttons {
-            justify-content: center;
-        }
-        
-        .steps {
             grid-template-columns: 1fr;
-            gap: 40px;
         }
-        
-        .step-description {
-            max-width: 400px;
-        }
-        
-        .about-content {
-            grid-template-columns: 1fr;
-            gap: 40px;
-        }
-        
-        .contact-content {
-            grid-template-columns: 1fr;
-            gap: 40px;
-        }
-        
-        .about {
-            margin: 30px 20px;
-            padding: 60px 0;
-        }
-        
-        .contact {
-            padding: 60px 0;
-        }
-    }
 
-    @media (max-width: 768px) {
-        .landing-container {
-            padding: 0;
-        }
-        
-        .hero-content h1 {
-            font-size: 42px;
-        }
-        
-        .hero-stats {
-            gap: 25px;
-        }
-        
-        .stat-number {
-            font-size: 32px;
-        }
-        
-        .hero-buttons {
+        .cta-panel {
             flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .btn-hero {
-            justify-content: center;
-        }
-        
-        .features-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .section-title {
-            font-size: 36px;
-        }
-        
-        .cta {
-            padding: 50px 25px;
-        }
-        
-        .cta h2 {
-            font-size: 32px;
-        }
-        
-        .cta-buttons {
-            flex-direction: column;
-        }
-        
-        .footer-content {
-            grid-template-columns: 1fr;
-            gap: 40px;
-        }
-        
-        .nav-links {
-            display: none;
+            align-items: flex-start;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Animated Background -->
-<div class="animated-bg"></div>
-
-<!-- Floating Particles -->
-<div class="particles">
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-</div>
-
-<div class="landing-container">
-    <!-- Navigation -->
-    <nav>
-        <div class="logo">
-            <div class="logo-icon">
-                <i class="fas fa-check-double"></i>
-            </div>
-            <div class="logo-text">Simple<span>Vote</span></div>
-        </div>
-        <div class="nav-links">
-            <a href="#features">Features</a>
-            <a href="#how-it-works">How It Works</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
-            <a href="{% url 'voting:create_poll' %}" class="btn-primary">Create a Poll <i class="fas fa-arrow-right"></i></a>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>
-                Democracy Made
-                <span class="highlight">Simple</span>
-                <br>For Everyone
-            </h1>
-            <p class="hero-description">
-                Create secure, anonymous polls in seconds. Perfect for classrooms, 
-                meetings, and small gatherings. Your voice matters, make it count.
+<div class="landing-page">
+    <section class="hero-grid">
+        <div class="hero-copy">
+            <span class="eyebrow"><i class="fas fa-moon"></i> Refreshed theme system</span>
+            <h1>Democratic voting now feels focused, premium, and easy on the eyes.</h1>
+            <p>
+                SimpleVote now carries a richer interface across entry points, dashboards, poll management,
+                and live voting flows so teams can work longer with less visual noise.
             </p>
+            <div class="hero-actions">
+                <a href="{% url 'accounts:register' %}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Get Started</a>
+                <a href="{% url 'accounts:login' %}" class="btn btn-secondary"><i class="fas fa-right-to-bracket"></i> Sign In</a>
+            </div>
             <div class="hero-stats">
-                <div class="stat-item">
-                    <div class="stat-number">10K+</div>
-                    <div class="stat-label">Active Polls</div>
+                <div class="stat-chip">
+                    <strong>24/7</strong>
+                    <span class="muted">Comfortable low-light usability</span>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number">50K+</div>
-                    <div class="stat-label">Votes Cast</div>
+                <div class="stat-chip">
+                    <strong>1 theme</strong>
+                    <span class="muted">Shared across every core page</span>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number">4.9</div>
-                    <div class="stat-label">User Rating</div>
+                <div class="stat-chip">
+                    <strong>Fast</strong>
+                    <span class="muted">Cleaner contrast and clearer actions</span>
                 </div>
-            </div>
-            <div class="hero-buttons">
-                <a href="{% url 'accounts:register' %}" class="btn-hero btn-hero-primary">
-                    <i class="fas fa-plus-circle"></i>
-                    Create Free Poll
-                </a>
-                <a href="#how-it-works" class="btn-hero btn-hero-secondary">
-                    <i class="fas fa-play"></i>
-                    See How It Works
-                </a>
             </div>
         </div>
-        <div class="hero-image">
-            <div class="demo-card">
-                <div class="demo-header">
-                    <span class="demo-title">Class Trip Destination</span>
-                    <span class="demo-badge">Active · 2h left</span>
-                </div>
-                <div class="demo-options">
-                    <div class="demo-option">
-                        <div class="demo-radio selected"></div>
-                        <span class="demo-option-text">Beach Resort</span>
-                        <span class="demo-percentage">45%</span>
-                    </div>
-                    <div class="demo-option">
-                        <div class="demo-radio"></div>
-                        <span class="demo-option-text">Mountain Adventure</span>
-                        <span class="demo-percentage">32%</span>
-                    </div>
-                    <div class="demo-option">
-                        <div class="demo-radio"></div>
-                        <span class="demo-option-text">City Exploration</span>
-                        <span class="demo-percentage">23%</span>
-                    </div>
-                </div>
-                <button class="demo-vote-btn">
-                    <i class="fas fa-lock"></i>
-                    Cast Your Anonymous Vote
-                </button>
-            </div>
-        </div>
-    </section>
 
-    <!-- Features Section -->
-    <section id="features" class="features">
-        <h2 class="section-title">Why Choose SimpleVote?</h2>
-        <p class="section-subtitle">
-            We've combined the best democratic principles with modern technology 
-            to create the perfect voting experience for small groups.
-        </p>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h3 class="feature-title">Time-Bound Voting</h3>
-                <p class="feature-description">
-                    Set exact start and end times for your polls. Automatic closing 
-                    ensures fair and timely results.
-                </p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-user-check"></i>
-                </div>
-                <h3 class="feature-title">One Vote Per Person</h3>
-                <p class="feature-description">
-                    Strict enforcement of one vote per person using session tracking. 
-                    No duplicate voting, ever.
-                </p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-eye-slash"></i>
-                </div>
-                <h3 class="feature-title">Invisible Results</h3>
-                <p class="feature-description">
-                    Results stay hidden until the poll closes, preventing 
-                    bandwagon effects and ensuring unbiased voting.
-                </p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i class="fas fa-chart-bar"></i>
-                </div>
-                <h3 class="feature-title">Beautiful Analytics</h3>
-                <p class="feature-description">
-                    When voting ends, results are revealed with stunning 
-                    visualizations and detailed breakdowns.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works -->
-    <section id="how-it-works" class="how-it-works">
-        <h2 class="section-title">Simple 3-Step Process</h2>
-        <p class="section-subtitle">
-            Creating and managing polls has never been easier. Get started in minutes.
-        </p>
-        <div class="steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <h3 class="step-title">Create Your Poll</h3>
-                <p class="step-description">
-                    Enter your question, add options, and set the voting timeframe. 
-                    That's it!
-                </p>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <h3 class="step-title">Share With Voters</h3>
-                <p class="step-description">
-                    Share the unique poll link with your class, team, or meeting 
-                    participants.
-                </p>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <h3 class="step-title">Get Results</h3>
-                <p class="step-description">
-                    Watch as votes come in anonymously. Results are automatically 
-                    revealed when voting ends.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="about">
-        <div class="container">
-            <h2 class="section-title">About SimpleVote</h2>
-            <p class="section-subtitle">
-                We believe democracy should be simple, accessible, and secure for everyone.
-            </p>
-            <div class="about-content">
-                <div class="about-text">
-                    <h3>Our Mission</h3>
-                    <p>
-                        SimpleVote was born from a simple observation: voting shouldn't be complicated. 
-                        Whether you're deciding on a classroom activity, team lunch, or community project, 
-                        the process should be transparent, fair, and easy to understand.
-                    </p>
-                    <p>
-                        We've eliminated the complexity while maintaining the integrity of the democratic process. 
-                        No complex setups, no confusing interfaces - just pure, simple voting that works.
-                    </p>
-                    <div class="about-values">
-                        <div class="value-item">
-                            <i class="fas fa-shield-alt"></i>
-                            <h4>Security First</h4>
-                            <p>Your votes and data are protected with enterprise-grade security.</p>
-                        </div>
-                        <div class="value-item">
-                            <i class="fas fa-users"></i>
-                            <h4>Accessibility</h4>
-                            <p>Designed for everyone, regardless of technical expertise.</p>
-                        </div>
-                        <div class="value-item">
-                            <i class="fas fa-balance-scale"></i>
-                            <h4>Fairness</h4>
-                            <p>One vote per person, anonymous results, and transparent processes.</p>
-                        </div>
+        <div class="hero-preview">
+            <div class="preview-card">
+                <div class="preview-header">
+                    <div>
+                        <h3>Live poll preview</h3>
+                        <p>How the refined voting surface feels in action.</p>
                     </div>
+                    <span class="badge bg-success">Live</span>
                 </div>
-                <div class="about-stats">
-                    <div class="about-stat">
-                        <div class="about-stat-number">10K+</div>
-                        <div class="about-stat-label">Active Users</div>
-                    </div>
-                    <div class="about-stat">
-                        <div class="about-stat-number">50K+</div>
-                        <div class="about-stat-label">Polls Created</div>
-                    </div>
-                    <div class="about-stat">
-                        <div class="about-stat-number">1M+</div>
-                        <div class="about-stat-label">Votes Cast</div>
-                    </div>
-                    <div class="about-stat">
-                        <div class="about-stat-number">99.9%</div>
-                        <div class="about-stat-label">Uptime</div>
-                    </div>
+                <div class="preview-option">
+                    <div class="preview-label"><span class="preview-dot"></span>Option A</div>
+                    <span>42%</span>
+                </div>
+                <div class="preview-option selected">
+                    <div class="preview-label"><span class="preview-dot"></span>Option B</div>
+                    <span>58%</span>
+                </div>
+                <div class="preview-option">
+                    <div class="preview-label"><span class="preview-dot"></span>Option C</div>
+                    <span>19%</span>
+                </div>
+                <div class="preview-footer">
+                    <span class="muted">Secure choice capture</span>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary">Start Voting</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="contact">
-        <div class="container">
-            <h2 class="section-title">Get In Touch</h2>
-            <p class="section-subtitle">
-                Have questions? Need help? We'd love to hear from you.
-            </p>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="contact-details">
-                            <h4>Email Us</h4>
-                            <p>support@simplevote.com</p>
-                            <p>We'll respond within 24 hours</p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-comments"></i>
-                        </div>
-                        <div class="contact-details">
-                            <h4>Live Chat</h4>
-                            <p>Available Mon-Fri, 9AM-5PM EST</p>
-                            <p>Get instant help from our team</p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fab fa-twitter"></i>
-                        </div>
-                        <div class="contact-details">
-                            <h4>Social Media</h4>
-                            <p>@SimpleVoteApp</p>
-                            <p>Follow for updates and tips</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="contact-form">
-                    <form class="form">
-                        <div class="form-group">
-                            <input type="text" placeholder="Your Name" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" placeholder="Your Email" required>
-                        </div>
-                        <div class="form-group">
-                            <select required>
-                                <option value="">Select a topic</option>
-                                <option value="support">Technical Support</option>
-                                <option value="feedback">Feedback</option>
-                                <option value="feature">Feature Request</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <textarea placeholder="Your Message" rows="5" required></textarea>
-                        </div>
-                        <button type="submit" class="btn-submit">
-                            <i class="fas fa-paper-plane"></i>
-                            Send Message
-                        </button>
-                    </form>
-                </div>
-            </div>
+    <section class="feature-grid">
+        <article class="feature-card">
+            <i class="fas fa-shield-halved"></i>
+            <h3>Secure by default</h3>
+            <p>Important actions stand out clearly, while status colors stay readable in both themes.</p>
+        </article>
+        <article class="feature-card">
+            <i class="fas fa-chart-simple"></i>
+            <h3>Clear analytics</h3>
+            <p>Results, badges, and totals have stronger hierarchy so poll data is easier to scan at a glance.</p>
+        </article>
+        <article class="feature-card">
+            <i class="fas fa-mobile-screen-button"></i>
+            <h3>Responsive everywhere</h3>
+            <p>The shared shell compresses cleanly on smaller screens without losing navigation or action clarity.</p>
+        </article>
+    </section>
+
+    <section class="steps-grid">
+        <article class="step-card">
+            <i class="fas fa-user-plus"></i>
+            <h3>Create your account</h3>
+            <p>Start in a polished sign-up flow with focused form states and consistent validation styling.</p>
+        </article>
+        <article class="step-card">
+            <i class="fas fa-square-poll-vertical"></i>
+            <h3>Build the poll</h3>
+            <p>Use the redesigned creation screen to define schedule, choices, and voting setup in one place.</p>
+        </article>
+        <article class="step-card">
+            <i class="fas fa-check-double"></i>
+            <h3>Collect votes confidently</h3>
+            <p>Participants land on a distraction-light voting page that keeps the question front and center.</p>
+        </article>
+    </section>
+
+    <section class="cta-panel">
+        <div>
+            <span class="eyebrow"><i class="fas fa-sparkles"></i> Ready to use</span>
+            <h2 style="margin: 14px 0 10px;">Launch a sharper-looking voting experience today.</h2>
+            <p>The whole interface now feels like one product instead of separate pages with conflicting styles.</p>
+        </div>
+        <div class="cta-actions">
+            <a href="{% url 'accounts:register' %}" class="btn btn-primary"><i class="fas fa-rocket"></i> Create Account</a>
+            <a href="{% url 'voting:poll_list' %}" class="btn btn-secondary"><i class="fas fa-compass"></i> Explore Polls</a>
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta">
-        <h2>Ready to Start Voting?</h2>
-        <p>
-            Join thousands of classrooms, meetings, and organizations that trust 
-            SimpleVote for their democratic decisions.
-        </p>
-        <div class="cta-buttons">
-            <a href="{% url 'accounts:register' %}" class="btn-cta-primary">
-                <i class="fas fa-plus-circle"></i>
-                Create Your First Poll
-            </a>
-            <a href="{% url 'voting:poll_list' %}" class="btn-cta-secondary">
-                <i class="fas fa-rocket"></i>
-                Browse Polls
-            </a>
+    <section class="footer-grid">
+        <div>
+            <h4>Product</h4>
+            <p><a href="{% url 'accounts:login' %}">Sign In</a></p>
+            <p><a href="{% url 'accounts:register' %}">Register</a></p>
+        </div>
+        <div>
+            <h4>Platform</h4>
+            <p><a href="{% url 'voting:poll_list' %}">Browse Polls</a></p>
+            {% if user.is_authenticated and user.is_staff %}
+            <p><a href="{% url 'voting:create_poll' %}">Create Poll</a></p>
+            {% endif %}
+        </div>
+        <div>
+            <h4>Experience</h4>
+            <p>Consistent light and dark visuals, cleaner spacing, and better contrast across the app.</p>
         </div>
     </section>
-
-    <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <div>
-                <div class="footer-logo">Simple<span>Vote</span></div>
-                <p class="footer-about">
-                    Making democracy accessible, one vote at a time. 
-                    Perfect for classrooms, meetings, and small gatherings.
-                </p>
-                <div class="social-links">
-                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-github"></i></a>
-                </div>
-            </div>
-            <div class="footer-links">
-                <h4>Product</h4>
-                <ul>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="{% url 'voting:poll_list' %}">Browse Polls</a></li>
-                    <li><a href="#how-it-works">How It Works</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </div>
-            <div class="footer-links">
-                <h4>Company</h4>
-                <ul>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#">Blog</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </div>
-            <div class="footer-links">
-                <h4>Legal</h4>
-                <ul>
-                    <li><a href="#">Privacy</a></li>
-                    <li><a href="#">Terms</a></li>
-                    <li><a href="#">Security</a></li>
-                    <li><a href="#">Cookies</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="copyright">
-            © 2026 SimpleVote. All rights reserved. Made with ❤️ for democracy.
-        </div>
-    </footer>
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
 
-    // Scroll animation observer
-    const observerOptions = {
-        threshold: 0.2,
-        rootMargin: '0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-
-    // Observe feature cards and steps
-    document.querySelectorAll('.feature-card, .step').forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(30px)';
-        el.style.transition = 'all 0.6s ease-out';
-        observer.observe(el);
-    });
-</script>
-{% endblock %}

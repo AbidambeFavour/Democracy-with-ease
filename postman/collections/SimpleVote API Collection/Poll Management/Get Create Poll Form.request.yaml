@@ -1,0 +1,40 @@
+$kind: http-request
+name: Create Poll Form (GET)
+description: Load the create poll form. Requires login. Use this to confirm the form renders before submitting a new poll.
+url: '{{baseUrl}}/voting/create/'
+method: GET
+order: 4000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Authenticated: renders create poll form (200)
+      // Unauthenticated: redirects to login (302)
+      pm.test("Create poll form returns 200 or 302", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(3000);
+      });
+
+      if (pm.response.code === 200) {
+          pm.test("Response is HTML", function () {
+              pm.expect(pm.response.headers.get("Content-Type")).to.include("text/html");
+          });
+
+          pm.test("Create poll form fields are present", function () {
+              const body = pm.response.text();
+              pm.expect(body).to.include("form");
+              pm.expect(body.toLowerCase()).to.satisfy(function (b) {
+                  return b.includes("title") || b.includes("choice") || b.includes("poll");
+              });
+          });
+      }
+
+      if (pm.response.code === 302) {
+          pm.test("Unauthenticated request redirects to login", function () {
+              const location = pm.response.headers.get("Location");
+              pm.expect(location).to.include("login");
+          });
+      }

@@ -1,0 +1,13 @@
+$kind: collection
+order: 5000
+description: |-
+  Step 5 — Admin Checks. Verify staff and superuser-only views.
+
+  Recommended sequence:
+    1. Admin Dashboard         — staff-only dashboard at /accounts/admin-dashboard/
+                                 (requires is_staff=True on the logged-in account)
+    2. Django Admin Site       — Django built-in admin at /admin/
+                                 (requires a superuser; create one with
+                                  `python manage.py createsuperuser`)
+
+  Run these after completing Steps 2–4 with a staff/superuser account.

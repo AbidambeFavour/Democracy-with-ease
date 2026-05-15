@@ -1,0 +1,28 @@
+$kind: http-request
+name: Logout
+description: Log out the currently authenticated user. Requires an active session cookie. The server will clear the session and redirect to the landing page.
+url: '{{baseUrl}}/accounts/logout/'
+method: GET
+order: 5000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Logout redirects to the landing page (302) or renders it (200)
+      // If unauthenticated, Django login_required redirects to login (302)
+      pm.test("Logout returns redirect or page (2xx/3xx)", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(3000);
+      });
+
+      // After logout the session cookie should be cleared or expired
+      if (pm.response.code === 302) {
+          pm.test("Session cookie is cleared after logout", function () {
+              const sessionCookie = pm.cookies.get("sessionid");
+              // Cookie may be absent or set to empty/expired value
+              pm.expect(sessionCookie == null || sessionCookie === "").to.be.true;
+          });
+      }

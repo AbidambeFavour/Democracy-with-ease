@@ -3,365 +3,43 @@
 {% block title %}All Polls - SimpleVote{% endblock %}
 
 {% block extra_css %}
-<!-- Font Awesome 6 (Free) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<!-- Google Fonts: Inter + Playfair Display -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <style>
-    /* ===== RESET & BASE STYLES ===== */
-    body, body.landing-page, html body {
-        background: transparent !important;
-        font-family: 'Inter', sans-serif !important;
-        color: #1a1a2e !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        min-height: 100vh !important;
-    }
-    
-    /* Set background on html instead to allow animated background to show */
-    html {
-        background: #4a5568 !important;
+    .polls-layout {
+        display: grid;
+        gap: 24px;
     }
 
-    /* Remove any white backgrounds/containers from base template */
-    .container, .container-fluid, main, .main-content, [class*="container"] {
-        background: transparent !important;
-        max-width: none !important;
-        padding: 0 40px !important;
-        margin: 0 !important;
-        width: 100% !important;
-    }
-    
-    /* Ensure full width layout */
-    html, body {
-        overflow-x: hidden !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
+    .page-header,
+    .filters-section,
+    .empty-state,
+    .pagination {
+        padding: 28px;
     }
 
-    /* ===== ANIMATED BACKGROUND ===== */
-    .animated-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        overflow: hidden;
-        pointer-events: none;
-    }
-
-    .animated-bg::before {
-        content: '';
-        position: absolute;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(
-            45deg,
-            rgba(255, 255, 255, 0.15) 0%,
-            rgba(255, 255, 255, 0.1) 25%,
-            transparent 50%,
-            rgba(255, 255, 255, 0.1) 75%,
-            transparent 100%
-        );
-        animation: wave 20s infinite linear;
-    }
-
-    @keyframes wave {
-        0% { transform: translate(-30%, -30%) rotate(0deg); }
-        100% { transform: translate(30%, 30%) rotate(5deg); }
-    }
-
-    /* ===== FLOATING PARTICLES ===== */
-    .particles {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        pointer-events: none;
-    }
-
-    .particle {
-        position: absolute;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        animation: float 20s infinite ease-in-out;
-    }
-
-    .particle:nth-child(1) {
-        width: 400px;
-        height: 400px;
-        top: 5%;
-        left: 5%;
-        animation-duration: 25s;
-    }
-    
-    .particle:nth-child(2) {
-        width: 300px;
-        height: 300px;
-        bottom: 10%;
-        right: 5%;
-        animation-duration: 20s;
-        animation-delay: -5s;
-    }
-    
-    .particle:nth-child(3) {
-        width: 200px;
-        height: 200px;
-        top: 30%;
-        right: 20%;
-        animation-duration: 15s;
-        animation-delay: -2s;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translate(0, 0) rotate(0deg); }
-        25% { transform: translate(-30px, 30px) rotate(5deg); }
-        50% { transform: translate(30px, -20px) rotate(-5deg); }
-        75% { transform: translate(20px, 30px) rotate(3deg); }
-    }
-
-    /* ===== MAIN CONTAINER ===== */
-    .polls-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0;
-        position: relative;
-        background: transparent;
-        width: 100%;
-        min-height: 100vh;
-        padding-top: 120px;
-    }
-
-    /* ===== NAVIGATION ===== */
-    nav {
+    .page-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        padding: 30px 40px;
-        animation: slideDown 1s ease-out;
-        background: transparent;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-    }
-
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        text-decoration: none;
-    }
-
-    .logo-icon {
-        width: 50px;
-        height: 50px;
-        background: white;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        color: #667eea;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        transform: rotate(-5deg);
-        transition: all 0.3s ease;
-    }
-
-    .logo:hover .logo-icon {
-        transform: rotate(0deg) scale(1.1);
-    }
-
-    .logo-text {
-        font-size: 28px;
-        font-weight: 800;
-        color: white;
-        letter-spacing: -0.5px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .logo-text span {
-        color: #ffd93d;
-        font-weight: 400;
-        font-family: 'Playfair Display', serif;
-    }
-
-    .nav-links {
-        display: flex;
         gap: 20px;
-        align-items: center;
+        align-items: end;
     }
 
-    .nav-links a {
-        color: white;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 14px;
-        opacity: 0.9;
-        transition: all 0.3s ease;
-        padding: 8px 16px;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
-    }
-
-    .nav-links a:hover {
-        opacity: 1;
-        transform: translateY(-2px);
-        background: rgba(255,255,255,0.2);
-    }
-
-    /* ===== PAGE HEADER ===== */
-    .page-header {
-        background: rgba(255,255,255,0.98);
-        backdrop-filter: blur(10px);
-        border-radius: 30px;
-        padding: 40px;
-        box-shadow: 0 30px 50px rgba(0,0,0,0.3);
-        margin-bottom: 40px;
-        position: relative;
-        overflow: hidden;
-        border: 2px solid rgba(255,255,255,0.3);
-        animation: fadeInUp 1s ease-out;
-    }
-
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(40px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        animation: shine 8s infinite;
-    }
-
-    @keyframes shine {
-        0% { left: -100%; }
-        20% { left: 100%; }
-        100% { left: 100%; }
-    }
-
-    .page-title {
-        font-size: 36px;
-        font-weight: 800;
-        color: #2d3748;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .page-title i {
-        color: #667eea;
-    }
-
-    .page-subtitle {
-        color: #718096;
-        font-size: 18px;
-        margin-bottom: 20px;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-    }
-
-    .btn-create-poll {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        border-radius: 20px;
-        padding: 12px 25px;
-        font-weight: 600;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-    }
-
-    .btn-create-poll:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
-    }
-
-    /* ===== FILTERS ===== */
-    .filters-section {
-        background: rgba(255,255,255,0.98);
-        backdrop-filter: blur(10px);
-        border-radius: 25px;
-        padding: 25px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        margin-bottom: 30px;
-        border: 2px solid rgba(255,255,255,0.3);
-        animation: fadeInUp 1s ease-out 0.2s forwards;
-        opacity: 0;
+    .filters-grid,
+    .polls-grid {
+        display: grid;
+        gap: 18px;
     }
 
     .filters-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .polls-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     }
 
     .filter-group {
-        display: flex;
-        flex-direction: column;
+        display: grid;
         gap: 8px;
-    }
-
-    .filter-label {
-        font-weight: 600;
-        color: #2d3748;
-        font-size: 14px;
-    }
-
-    .filter-select {
-        padding: 10px 15px;
-        border: 2px solid #e2e8f0;
-        border-radius: 15px;
-        font-size: 14px;
-        background: white;
-        color: #2d3748;
-        transition: all 0.3s ease;
-    }
-
-    .filter-select:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
     }
 
     .search-box {
@@ -369,469 +47,251 @@
     }
 
     .search-input {
-        width: 100%;
-        padding: 10px 15px 10px 40px;
-        border: 2px solid #e2e8f0;
-        border-radius: 15px;
-        font-size: 14px;
-        background: white;
-        color: #2d3748;
-        transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        padding-left: 42px;
     }
 
     .search-icon {
         position: absolute;
-        left: 15px;
+        left: 16px;
         top: 50%;
         transform: translateY(-50%);
-        color: #718096;
-    }
-
-    /* ===== POLLS GRID ===== */
-    .polls-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 30px;
-        margin-bottom: 40px;
+        color: var(--muted);
     }
 
     .poll-card {
-        background: rgba(255,255,255,0.98);
-        backdrop-filter: blur(10px);
-        border-radius: 25px;
-        padding: 30px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        transition: all 0.4s ease;
-        position: relative;
-        overflow: hidden;
-        border: 2px solid rgba(255,255,255,0.3);
-        animation: fadeInUp 1s ease-out forwards;
-        opacity: 0;
-        cursor: pointer;
+        padding: 22px;
+        text-decoration: none;
+        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
     }
-
-    .poll-card:nth-child(1) { animation-delay: 0.3s; }
-    .poll-card:nth-child(2) { animation-delay: 0.4s; }
-    .poll-card:nth-child(3) { animation-delay: 0.5s; }
-    .poll-card:nth-child(4) { animation-delay: 0.6s; }
-    .poll-card:nth-child(5) { animation-delay: 0.7s; }
-    .poll-card:nth-child(6) { animation-delay: 0.8s; }
 
     .poll-card:hover {
-        transform: translateY(-10px) scale(1.02);
-        box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+        transform: translateY(-4px);
+        border-color: rgba(37, 99, 235, 0.28);
+        background: rgba(19, 33, 58, 0.94);
     }
 
-    .poll-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
-    }
-
-    .poll-card:hover::before {
-        transform: scaleX(1);
-    }
-
-    .poll-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 20px;
-    }
-
-    .poll-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 8px;
-        line-height: 1.4;
-    }
-
-    .poll-status {
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .status-active {
-        background: linear-gradient(135deg, #48bb78, #38a169);
-        color: white;
-    }
-
-    .status-closed {
-        background: linear-gradient(135deg, #718096, #4a5568);
-        color: white;
-    }
-
-    .status-upcoming {
-        background: linear-gradient(135deg, #f6ad55, #ed8936);
-        color: white;
-    }
-
-    .poll-description {
-        color: #718096;
-        font-size: 14px;
-        line-height: 1.6;
-        margin-bottom: 20px;
-    }
-
-    .poll-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin-bottom: 20px;
-    }
-
+    .poll-header,
+    .poll-footer,
     .meta-item {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        color: #718096;
+        justify-content: space-between;
+        gap: 12px;
     }
 
-    .meta-item i {
-        color: #667eea;
-        width: 16px;
+    .poll-header {
+        align-items: flex-start;
+        margin-bottom: 14px;
+    }
+
+    .poll-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--heading);
+        margin-bottom: 8px;
+    }
+
+    .poll-description {
+        margin-bottom: 16px;
+    }
+
+    .poll-meta {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .meta-item {
+        justify-content: flex-start;
+        color: var(--muted);
+        font-size: 0.92rem;
+    }
+
+    .meta-item i,
+    .poll-stats i {
+        color: var(--accent-text);
     }
 
     .poll-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 20px;
-        border-top: 1px solid #e2e8f0;
+        padding-top: 18px;
+        border-top: 1px solid var(--line);
     }
 
     .poll-stats {
-        display: flex;
+        color: #d7e4f8;
+        font-weight: 600;
+    }
+
+    .poll-action,
+    .btn-create-poll,
+    .page-link {
+        display: inline-flex;
         align-items: center;
         gap: 8px;
-        font-size: 14px;
-        color: #4a5568;
-        font-weight: 600;
-    }
-
-    .poll-stats i {
-        color: #667eea;
-    }
-
-    .poll-action {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        border-radius: 15px;
-        padding: 10px 20px;
-        font-size: 14px;
-        font-weight: 600;
+        padding: 10px 16px;
+        border-radius: 999px;
         text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-    }
-
-    .poll-action:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    /* ===== EMPTY STATE ===== */
-    .empty-state {
-        background: rgba(255,255,255,0.98);
-        backdrop-filter: blur(10px);
-        border-radius: 30px;
-        padding: 60px 40px;
-        box-shadow: 0 30px 50px rgba(0,0,0,0.3);
-        text-align: center;
-        border: 2px solid rgba(255,255,255,0.3);
-        animation: fadeInUp 1s ease-out;
-    }
-
-    .empty-icon {
-        font-size: 64px;
-        color: #cbd5e0;
-        margin-bottom: 20px;
-    }
-
-    .empty-title {
-        font-size: 24px;
         font-weight: 700;
-        color: #4a5568;
-        margin-bottom: 10px;
     }
 
-    .empty-description {
-        color: #718096;
-        font-size: 16px;
-        margin-bottom: 30px;
+    .poll-action,
+    .btn-create-poll,
+    .page-link.active {
+        background: var(--primary);
+        color: #fff;
     }
 
-    /* ===== PAGINATION ===== */
+    .poll-action,
+    .btn-create-poll {
+        box-shadow: 0 12px 24px rgba(37, 99, 235, 0.3);
+    }
+
     .pagination-container {
         display: flex;
         justify-content: center;
-        margin-top: 40px;
     }
 
     .pagination {
         display: flex;
         gap: 10px;
         align-items: center;
-        background: rgba(255,255,255,0.98);
-        backdrop-filter: blur(10px);
-        padding: 15px 25px;
-        border-radius: 25px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        border: 2px solid rgba(255,255,255,0.3);
     }
 
     .page-link {
-        padding: 8px 12px;
-        border-radius: 10px;
-        text-decoration: none;
-        font-weight: 600;
-        color: #4a5568;
-        transition: all 0.3s ease;
-        min-width: 40px;
-        text-align: center;
-    }
-
-    .page-link:hover {
-        background: rgba(102, 126, 234, 0.1);
-        color: #667eea;
-        transform: translateY(-2px);
-    }
-
-    .page-link.active {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        background: var(--chip-bg);
+        color: var(--text);
     }
 
     .page-link.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
+        opacity: 0.45;
+        pointer-events: none;
     }
 
-    /* ===== RESPONSIVE DESIGN ===== */
-    @media (max-width: 768px) {
-        .container, .container-fluid {
-            padding: 0 20px !important;
-        }
-        
-        .polls-container {
-            padding-top: 100px;
-        }
-        
-        .page-header {
-            padding: 25px;
-        }
-        
-        .page-title {
-            font-size: 28px;
-        }
-        
-        .header-actions {
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .polls-grid {
-            grid-template-columns: 1fr;
-        }
-        
+    .empty-state {
+        text-align: center;
+    }
+
+    .empty-state i {
+        font-size: 2.6rem;
+        color: var(--accent-text);
+        margin-bottom: 14px;
+    }
+
+    @media (max-width: 900px) {
+        .page-header,
         .filters-grid {
             grid-template-columns: 1fr;
-        }
-        
-        nav {
-            padding: 20px;
-        }
-        
-        .logo-text {
-            font-size: 24px;
-        }
-        
-        .nav-links {
-            display: none;
+            display: grid;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Animated Background -->
-<div class="animated-bg"></div>
-
-<!-- Floating Particles -->
-<div class="particles">
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-</div>
-
-<!-- Navigation -->
-<nav>
-    <a href="{% url 'accounts:landing' %}" class="logo">
-        <div class="logo-icon">
-            <i class="fas fa-check-double"></i>
+<div class="polls-layout">
+    <section class="page-header">
+        <div>
+            <span class="eyebrow"><i class="fas fa-compass"></i> Explore the platform</span>
+            <h1 style="margin: 16px 0 8px;">All Polls</h1>
+            <p>Browse live, upcoming, and closed polls in the refreshed catalog.</p>
         </div>
-        <div class="logo-text">Simple<span>Vote</span></div>
-    </a>
-    <div class="nav-links">
-        <a href="{% url 'voting:create_poll' %}">
-            <i class="fas fa-plus"></i> Create Poll
-        </a>
-        <a href="{% url 'accounts:dashboard' %}">
-            <i class="fas fa-tachometer-alt"></i> Dashboard
-        </a>
-        <a href="{% url 'accounts:logout' %}">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
-    </div>
-</nav>
+        {% if user.is_staff %}
+        <a href="{% url 'voting:create_poll' %}" class="btn-create-poll"><i class="fas fa-plus-circle"></i> Create New Poll</a>
+        {% endif %}
+    </section>
 
-<!-- Main Polls Container -->
-<div class="polls-container">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-title">
-            <i class="fas fa-list-ul"></i>
-            All Polls
-        </div>
-        <div class="page-subtitle">
-            Discover and participate in polls created by the community
-        </div>
-        <div class="header-actions">
-            <a href="{% url 'voting:create_poll' %}" class="btn-create-poll">
-                <i class="fas fa-plus-circle"></i>
-                Create New Poll
-            </a>
-        </div>
-    </div>
-
-    <!-- Filters Section -->
-    <div class="filters-section">
-        <div class="filters-grid">
+    <section class="filters-section">
+        <form method="get" class="filters-grid">
             <div class="filter-group">
                 <label class="filter-label">Search Polls</label>
                 <div class="search-box">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" placeholder="Search by title or description..." id="searchInput">
+                    <input type="text" class="search-input" placeholder="Search by title or description..." id="searchInput" name="search" value="{{ current_search }}">
                 </div>
             </div>
-            
             <div class="filter-group">
-                <label class="filter-label">Status</label>
-                <select class="filter-select" id="statusFilter">
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="upcoming">Upcoming</option>
-                    <option value="closed">Closed</option>
+                <label for="categoryFilter">Category</label>
+                <select id="categoryFilter" name="category">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if current_category == category.id|stringformat:'s' %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
-            
             <div class="filter-group">
-                <label class="filter-label">Sort By</label>
-                <select class="filter-select" id="sortBy">
+                <label for="statusFilter">Status</label>
+                <select id="statusFilter" name="status">
+                    <option value="" {% if not current_status %}selected{% endif %}>All Status</option>
+                    <option value="active" {% if current_status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="upcoming" {% if current_status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                    <option value="closed" {% if current_status == 'closed' %}selected{% endif %}>Closed</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sortBy">Sort By</label>
+                <select id="sortBy">
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
                     <option value="popular">Most Popular</option>
                     <option value="ending">Ending Soon</option>
                 </select>
             </div>
-        </div>
-    </div>
-
-    <!-- Polls Grid -->
-    {% if polls %}
-        <div class="polls-grid" id="pollsGrid">
-            {% for poll in polls %}
-            <div class="poll-card" data-url="{% url 'voting:poll_detail' poll.pk %}">
-                <div class="poll-header">
-                    <div>
-                        <div class="poll-title">{{ poll.title }}</div>
-                        {% if poll.get_status == 'Active' %}
-                            <span class="poll-status status-active">Active</span>
-                        {% elif poll.get_status == 'Closed' %}
-                            <span class="poll-status status-closed">Closed</span>
-                        {% else %}
-                            <span class="poll-status status-upcoming">Upcoming</span>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                {% if poll.description %}
-                    <div class="poll-description">{{ poll.description|truncatewords:20 }}</div>
-                {% endif %}
-                
-                <div class="poll-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-clock"></i>
-                        {% if poll.has_started %}
-                            Started: {{ poll.start_date|date:"M d, Y H:i" }}
-                        {% else %}
-                            Starts: {{ poll.start_date|date:"M d, Y H:i" }}
-                        {% endif %}
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-clock-history"></i>
-                        Ends: {{ poll.end_date|date:"M d, Y H:i" }}
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-user"></i>
-                        Created by {{ poll.creator.username|default:poll.creator }}
-                    </div>
-                </div>
-                
-                <div class="poll-footer">
-                    <div class="poll-stats">
-                        <i class="fas fa-bar-chart"></i>
-                        {{ poll.get_total_votes }} vote{{ poll.get_total_votes|pluralize }}
-                    </div>
-                    <a href="{% url 'voting:poll_detail' poll.pk %}" class="poll-action">
-                        {% if poll.is_active %}
-                            <i class="fas fa-vote-yea"></i> Vote
-                        {% else %}
-                            <i class="fas fa-eye"></i> View
-                        {% endif %}
-                    </a>
-                </div>
+            <div class="filter-group" style="align-self:end;">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
             </div>
+        </form>
+    </section>
+
+    {% if polls %}
+        <section class="polls-grid" id="pollsGrid">
+            {% for poll in polls %}
+                <article class="poll-card" data-url="{% url 'voting:poll_detail' poll.pk %}">
+                    <div class="poll-header">
+                        <div>
+                            <div class="poll-title">{{ poll.title }}</div>
+                            {% if poll.get_status == 'Active' %}
+                                <span class="poll-status status-active">Active</span>
+                            {% elif poll.get_status == 'Closed' %}
+                                <span class="poll-status status-closed">Closed</span>
+                            {% else %}
+                                <span class="poll-status status-upcoming">Upcoming</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if poll.description %}
+                        <p class="poll-description">{{ poll.description|truncatewords:20 }}</p>
+                    {% endif %}
+
+                    <div class="poll-meta">
+                        <div class="meta-item"><i class="fas fa-play"></i> {% if poll.has_started %}Started{% else %}Starts{% endif %}: {{ poll.start_date|date:"M d, Y H:i" }}</div>
+                        <div class="meta-item"><i class="fas fa-stop"></i> Ends: {{ poll.end_date|date:"M d, Y H:i" }}</div>
+                        <div class="meta-item"><i class="fas fa-user"></i> Created by {{ poll.creator.username|default:poll.creator }}</div>
+                    </div>
+
+                    <div class="poll-footer">
+                        <div class="poll-stats"><i class="fas fa-chart-column"></i> {{ poll.get_total_votes }} vote{{ poll.get_total_votes|pluralize }}</div>
+                        <a href="{% url 'voting:poll_detail' poll.pk %}" class="poll-action">
+                            {% if poll.is_active %}
+                                <i class="fas fa-vote-yea"></i> Vote
+                            {% else %}
+                                <i class="fas fa-eye"></i> View
+                            {% endif %}
+                        </a>
+                    </div>
+                </article>
             {% endfor %}
-        </div>
-        
-        <!-- Pagination -->
+        </section>
+
         {% if is_paginated %}
             <div class="pagination-container">
                 <div class="pagination">
                     {% if page_obj.has_previous %}
-                        <a href="?page={{ page_obj.previous_page_number }}" class="page-link">
-                            <i class="fas fa-chevron-left"></i>
-                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="page-link"><i class="fas fa-chevron-left"></i></a>
                     {% else %}
-                        <span class="page-link disabled">
-                            <i class="fas fa-chevron-left"></i>
-                        </span>
+                        <span class="page-link disabled"><i class="fas fa-chevron-left"></i></span>
                     {% endif %}
-                    
+
                     {% for num in page_obj.paginator.page_range %}
                         {% if page_obj.number == num %}
                             <span class="page-link active">{{ num }}</span>
@@ -839,34 +299,28 @@
                             <a href="?page={{ num }}" class="page-link">{{ num }}</a>
                         {% endif %}
                     {% endfor %}
-                    
+
                     {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}" class="page-link">
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
+                        <a href="?page={{ page_obj.next_page_number }}" class="page-link"><i class="fas fa-chevron-right"></i></a>
                     {% else %}
-                        <span class="page-link disabled">
-                            <i class="fas fa-chevron-right"></i>
-                        </span>
+                        <span class="page-link disabled"><i class="fas fa-chevron-right"></i></span>
                     {% endif %}
                 </div>
             </div>
         {% endif %}
     {% else %}
-        <!-- Empty State -->
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-inbox"></i>
-            </div>
-            <div class="empty-title">No polls yet</div>
-            <div class="empty-description">
-                Be the first to create a poll and get the community voting!
-            </div>
-            <a href="{% url 'voting:create_poll' %}" class="btn-create-poll">
-                <i class="fas fa-plus-circle"></i>
-                Create Poll
-            </a>
-        </div>
+        <section class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h2>No polls yet</h2>
+            {% if user.is_staff %}
+                <p>Be the first to create one and start the conversation.</p>
+                <div style="margin-top: 20px;">
+                    <a href="{% url 'voting:create_poll' %}" class="btn-create-poll"><i class="fas fa-plus-circle"></i> Create Poll</a>
+                </div>
+            {% else %}
+                <p>No polls are available at the moment. Check back later for new polls to participate in!</p>
+            {% endif %}
+        </section>
     {% endif %}
 </div>
 {% endblock %}
@@ -874,92 +328,69 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add click handlers to poll cards
-    document.querySelectorAll('.poll-card[data-url]').forEach(card => {
+    document.querySelectorAll('.poll-card[data-url]').forEach(function(card) {
         card.addEventListener('click', function(e) {
-            // Don't navigate if clicking on the action button
             if (!e.target.closest('.poll-action')) {
-                const url = this.getAttribute('data-url');
-                if (url) {
-                    window.location.href = url;
-                }
+                window.location.href = this.getAttribute('data-url');
             }
         });
     });
-    
-    // Search functionality
+
     const searchInput = document.getElementById('searchInput');
     const pollsGrid = document.getElementById('pollsGrid');
-    
+    const statusFilter = document.getElementById('statusFilter');
+    const sortBy = document.getElementById('sortBy');
+
     if (searchInput && pollsGrid) {
         searchInput.addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
-            const pollCards = pollsGrid.querySelectorAll('.poll-card');
-            
-            pollCards.forEach(card => {
+            pollsGrid.querySelectorAll('.poll-card').forEach(function(card) {
                 const title = card.querySelector('.poll-title').textContent.toLowerCase();
-                const description = card.querySelector('.poll-description')?.textContent.toLowerCase() || '';
-                
-                if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
+                const description = (card.querySelector('.poll-description') || { textContent: '' }).textContent.toLowerCase();
+                card.style.display = (title.includes(searchTerm) || description.includes(searchTerm)) ? 'block' : 'none';
             });
         });
     }
-    
-    // Filter functionality
-    const statusFilter = document.getElementById('statusFilter');
+
     if (statusFilter && pollsGrid) {
         statusFilter.addEventListener('change', function(e) {
             const filterValue = e.target.value;
-            const pollCards = pollsGrid.querySelectorAll('.poll-card');
-            
-            pollCards.forEach(card => {
-                if (filterValue === '') {
+            pollsGrid.querySelectorAll('.poll-card').forEach(function(card) {
+                if (!filterValue) {
                     card.style.display = 'block';
-                } else {
-                    const statusBadge = card.querySelector('.poll-status');
-                    const status = statusBadge.textContent.toLowerCase();
-                    
-                    if (status.includes(filterValue)) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
+                    return;
                 }
+                const status = card.querySelector('.poll-status').textContent.toLowerCase();
+                card.style.display = status.includes(filterValue) ? 'block' : 'none';
             });
         });
     }
-    
-    // Sort functionality (simulated)
-    const sortBy = document.getElementById('sortBy');
+
     if (sortBy && pollsGrid) {
         sortBy.addEventListener('change', function(e) {
             const sortValue = e.target.value;
             const pollCards = Array.from(pollsGrid.querySelectorAll('.poll-card'));
-            
-            // This is a simplified sort - in a real app, you'd sort the data server-side
-            pollCards.sort((a, b) => {
-                switch(sortValue) {
-                    case 'newest':
-                        return 1; // Reverse order
-                    case 'oldest':
-                        return -1; // Normal order
-                    case 'popular':
-                        const votesA = parseInt(a.querySelector('.poll-stats').textContent);
-                        const votesB = parseInt(b.querySelector('.poll-stats').textContent);
-                        return votesB - votesA;
-                    default:
-                        return 0;
+            pollCards.sort(function(a, b) {
+                if (sortValue === 'popular') {
+                    const votesA = parseInt(a.querySelector('.poll-stats').textContent, 10) || 0;
+                    const votesB = parseInt(b.querySelector('.poll-stats').textContent, 10) || 0;
+                    return votesB - votesA;
                 }
+                if (sortValue === 'oldest') {
+                    return -1;
+                }
+                if (sortValue === 'newest') {
+                    return 1;
+                }
+                return 0;
             });
-            
-            // Re-append sorted cards
-            pollCards.forEach(card => pollsGrid.appendChild(card));
+            pollCards.forEach(function(card) {
+                pollsGrid.appendChild(card);
+            });
         });
     }
 });
 </script>
 {% endblock %}
+
+

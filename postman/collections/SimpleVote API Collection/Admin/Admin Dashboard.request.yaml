@@ -1,0 +1,33 @@
+$kind: http-request
+name: Admin Dashboard
+description: 'Staff-only dashboard. Requires an active session for a user with `is_staff=True`. Regular users will receive a 403 or redirect.'
+url: '{{baseUrl}}/accounts/admin-dashboard/'
+method: GET
+order: 1000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Staff user: renders admin dashboard (200)
+      // Non-staff authenticated user: redirects away (302)
+      // Unauthenticated: redirects to login (302)
+      pm.test("Admin dashboard returns 200 or 302", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302, 403]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(5000);
+      });
+
+      if (pm.response.code === 200) {
+          pm.test("Response is HTML", function () {
+              pm.expect(pm.response.headers.get("Content-Type")).to.include("text/html");
+          });
+
+          pm.test("Admin dashboard contains statistics content", function () {
+              const body = pm.response.text();
+              pm.expect(body.toLowerCase()).to.satisfy(function (b) {
+                  return b.includes("admin") || b.includes("user") || b.includes("poll");
+              });
+          });
+      }

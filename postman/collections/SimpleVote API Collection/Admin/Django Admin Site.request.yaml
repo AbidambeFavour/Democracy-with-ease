@@ -1,0 +1,26 @@
+$kind: http-request
+name: Django Admin Site
+description: Django built-in admin interface. Access requires a superuser account. Log in at this URL to manage users, polls, votes, and other model data directly.
+url: '{{baseUrl}}/admin/'
+method: GET
+order: 2000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Unauthenticated or non-superuser: renders admin login page (200)
+      // Authenticated superuser: renders admin index (200)
+      pm.test("Django admin site is reachable (200)", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Response is HTML", function () {
+          pm.expect(pm.response.headers.get("Content-Type")).to.include("text/html");
+      });
+
+      pm.test("Response contains Django admin content", function () {
+          const body = pm.response.text();
+          pm.expect(body.toLowerCase()).to.satisfy(function (b) {
+              return b.includes("django") || b.includes("admin") || b.includes("log in");
+          });
+      });

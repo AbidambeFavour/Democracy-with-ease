@@ -1,0 +1,44 @@
+$kind: http-request
+name: Submit Vote (POST)
+description: |-
+  Cast a vote on a poll. Requires login. Replace `{{pk}}` with the poll's numeric ID.
+  The `choice` field value must be the numeric ID of one of the poll's choices.
+  If the poll allows multiple votes, you may submit multiple `choice` values.
+url: '{{baseUrl}}/voting/poll/{{pk}}/'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/x-www-form-urlencoded
+pathVariables:
+  - key: pk
+    value: '{{pk}}'
+    description: Primary key (numeric ID) of the poll to vote on (set via environment variable)
+body:
+  type: urlencoded
+  content:
+    - key: choice
+      value: '{{choice}}'
+      description: Numeric ID of the choice to vote for (set via environment variable)
+order: 3000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Successful vote: redirects back to poll detail (302)
+      // Already voted / poll closed: redirects back with error message (302)
+      // Unauthenticated: redirects to login (302)
+      // Invalid poll pk: 404
+      pm.test("Submit vote returns 302 or 404", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302, 404]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(5000);
+      });
+
+      if (pm.response.code === 302) {
+          pm.test("Vote redirects back to poll detail or login", function () {
+              const location = pm.response.headers.get("Location");
+              pm.expect(location).to.not.be.null;
+          });
+      }

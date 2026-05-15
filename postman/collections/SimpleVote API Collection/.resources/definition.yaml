@@ -1,0 +1,26 @@
+$kind: collection
+name: SimpleVote API Collection
+description: |-
+  Complete request collection for the SimpleVote Django voting system.
+  Covers authentication, user accounts, poll management, voting, comments, and reactions.
+
+  **Before you start:**
+  1. Select the **SimpleVote Local** environment (included in postman/environments/).
+  2. Start the Django dev server: `python manage.py runserver`
+  3. Run requests in order — authenticate first, then test polls and voting.
+
+  **Session note:** Django uses cookie-based sessions. After a successful Login request
+  Postman will store the `sessionid` cookie automatically and send it with subsequent requests.
+  No manual token handling is needed for most flows.
+
+  **Key variables (set in the environment):**
+  - `baseUrl` — Django dev server root (default: http://127.0.0.1:8000)
+  - `username` / `password` / `email` — test account credentials
+  - `pk` / `poll_id` — numeric IDs for poll-related requests
+  - `choice` — numeric ID of a poll choice for voting
+  - `reaction_type` — one of: like, love, haha, wow, sad, angry
+  - `uidb64` / `token` — values from a password-reset email link
+variables:
+  - key: baseUrl
+    value: 'http://127.0.0.1:8000'
+    description: Root URL of the local Django development server

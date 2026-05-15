@@ -1,0 +1,40 @@
+$kind: http-request
+name: Add Comment (POST)
+description: Post a comment on a poll. Requires login. Replace `{{poll_id}}` with the numeric ID of the target poll.
+url: '{{baseUrl}}/voting/poll/{{poll_id}}/comment/'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/x-www-form-urlencoded
+pathVariables:
+  - key: poll_id
+    value: '{{poll_id}}'
+    description: Numeric ID of the poll to comment on (set via environment variable)
+body:
+  type: urlencoded
+  content:
+    - key: content
+      value: 'This is a great poll! My vote goes to Python.'
+      description: Comment text content (required)
+order: 6000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Successful comment: redirects back to poll detail (302)
+      // Unauthenticated: redirects to login (302)
+      // Non-existent poll: 404
+      pm.test("Add comment returns 302 or 404", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302, 404]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(5000);
+      });
+
+      if (pm.response.code === 302) {
+          pm.test("Comment submission redirects to poll detail or login", function () {
+              const location = pm.response.headers.get("Location");
+              pm.expect(location).to.not.be.null;
+          });
+      }

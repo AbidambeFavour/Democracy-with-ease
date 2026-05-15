@@ -1,0 +1,24 @@
+$kind: http-request
+name: Home Redirect
+description: Root URL of the application. Redirects to the accounts landing page. Useful as a smoke test to confirm the server is running.
+url: '{{baseUrl}}/'
+method: GET
+order: 1000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Smoke test — server must be reachable and return a redirect or HTML page
+      pm.test("Server is reachable (2xx or 3xx)", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 301, 302, 303]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(3000);
+      });
+
+      if (pm.response.code === 200) {
+          pm.test("Response contains HTML content", function () {
+              pm.expect(pm.response.text()).to.include("<html");
+          });
+      }

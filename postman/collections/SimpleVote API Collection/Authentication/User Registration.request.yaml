@@ -1,0 +1,60 @@
+$kind: http-request
+name: Register (POST)
+description: Submit the registration form to create a new user account. Send all required fields as URL-encoded form data.
+url: '{{baseUrl}}/accounts/register/'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/x-www-form-urlencoded
+body:
+  type: urlencoded
+  content:
+    - key: username
+      value: '{{username}}'
+      description: Unique username for the new account (set via environment variable)
+    - key: email
+      value: '{{email}}'
+      description: User email address (set via environment variable)
+    - key: first_name
+      value: Test
+      description: User first name
+    - key: last_name
+      value: User
+      description: User last name
+    - key: password1
+      value: '{{password}}'
+      description: Chosen password (set via environment variable)
+    - key: password2
+      value: '{{password}}'
+      description: Password confirmation — must match password1
+order: 2000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Successful registration logs the user in and redirects to dashboard (302)
+      // If the username already exists the form re-renders (200) with errors
+      pm.test("Registration response is 200 or 302", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(5000);
+      });
+
+      // On success a session cookie is created immediately (user is auto-logged in)
+      if (pm.response.code === 302) {
+          pm.test("Session cookie set on successful registration", function () {
+              const sessionCookie = pm.cookies.get("sessionid");
+              pm.expect(sessionCookie).to.not.be.undefined;
+          });
+      }
+
+      // If the form re-renders, check it does not show a generic server error
+      if (pm.response.code === 200) {
+          pm.test("No server error on registration page", function () {
+              const body = pm.response.text();
+              pm.expect(body).to.not.include("500");
+              pm.expect(body).to.not.include("Server Error");
+          });
+      }

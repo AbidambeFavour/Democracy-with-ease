@@ -1,0 +1,51 @@
+$kind: http-request
+name: Login (POST)
+description: Submit login credentials. On success the server sets a session cookie used by subsequent authenticated requests. Make sure to capture the `sessionid` cookie from the response.
+url: '{{baseUrl}}/accounts/login/'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/x-www-form-urlencoded
+body:
+  type: urlencoded
+  content:
+    - key: username
+      value: '{{username}}'
+      description: Username of the account to log in (set via environment variable)
+    - key: password
+      value: '{{password}}'
+      description: Account password (set via environment variable)
+order: 4000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Successful login redirects to dashboard (302) or renders it directly (200)
+      pm.test("Login succeeds — redirect or dashboard rendered", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(5000);
+      });
+
+      // A session cookie must be set on successful login
+      pm.test("Session cookie is set after login", function () {
+          const sessionCookie = pm.cookies.get("sessionid");
+          pm.expect(sessionCookie).to.not.be.undefined;
+          pm.expect(sessionCookie).to.not.be.empty;
+      });
+
+      // If the server re-renders the login page, credentials were rejected
+      if (pm.response.code === 200) {
+          pm.test("Response does not show login error message", function () {
+              const body = pm.response.text();
+              pm.expect(body).to.not.include("Invalid username or password");
+          });
+      }
+
+      // Persist sessionid for downstream requests
+      const sessionCookie = pm.cookies.get("sessionid");
+      if (sessionCookie) {
+          pm.collectionVariables.set("sessionid", sessionCookie);
+      }

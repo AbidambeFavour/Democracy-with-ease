@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Polls - Super Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filters-section {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+        border: 1px solid var(--line);
+    }
+    
+    .polls-table {
+        background: var(--card-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+    }
+    
+    .table {
+        margin: 0;
+    }
+    
+    .table th {
+        background: var(--surface);
+        border-bottom: 2px solid var(--line);
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .table td {
+        vertical-align: middle;
+        border-bottom: 1px solid var(--line);
+    }
+    
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .status-active {
+        background: var(--success-light);
+        color: var(--success);
+    }
+    
+    .status-closed {
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+    
+    .status-upcoming {
+        background: var(--warning-light);
+        color: var(--warning);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        border-radius: 6px;
+    }
+    
+    .filter-form {
+        display: flex;
+        gap: 16px;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .filter-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--surface);
+        color: var(--text-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Manage Polls</h1>
+        <p>Super admin control over all polls in the system</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="get" class="filter-form">
+            <div class="filter-group">
+                <label for="status">Status</label>
+                <select name="status" id="status">
+                    <option value="">All Status</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                    <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+                    <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="creator">Creator</label>
+                <input type="text" name="creator" id="creator" value="{{ creator_filter }}" placeholder="Search by username">
+            </div>
+            
+            <div class="filter-group">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="{% url 'voting:manage_polls' %}" class="btn btn-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Polls Table -->
+    <div class="polls-table">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Creator</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Votes</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for poll in polls %}
+                    <tr>
+                        <td>
+                            <strong>{{ poll.title }}</strong>
+                            {% if poll.tags %}
+                                <br><small class="text-muted">{{ poll.tags|truncatechars:50 }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if poll.creator %}
+                                {{ poll.creator.username }}
+                            {% else %}
+                                <span class="text-muted">Unknown</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if poll.category %}
+                                {{ poll.category.name }}
+                            {% else %}
+                                <span class="text-muted">No category</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ poll.get_status|lower }}">
+                                {{ poll.get_status }}
+                            </span>
+                        </td>
+                        <td>
+                            <strong>{{ poll.vote_count }}</strong>
+                        </td>
+                        <td>
+                            <small>{{ poll.created_at|date:"M d, Y" }}</small>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'voting:poll_detail' poll.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="{% url 'voting:delete_poll' poll.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Delete
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No polls found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="pagination justify-content-center mt-4">
+        <span class="page-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+            
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

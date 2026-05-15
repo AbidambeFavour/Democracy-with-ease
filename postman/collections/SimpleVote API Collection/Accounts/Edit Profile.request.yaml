@@ -1,0 +1,52 @@
+$kind: http-request
+name: Edit Profile (POST)
+description: Update the current user's profile information. Requires an active session. All fields are optional — only include the ones you want to update.
+url: '{{baseUrl}}/accounts/profile/'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/x-www-form-urlencoded
+body:
+  type: urlencoded
+  content:
+    - key: first_name
+      value: Test
+      description: User first name
+    - key: last_name
+      value: User
+      description: User last name
+    - key: email
+      value: '{{email}}'
+      description: Email address (set via environment variable)
+    - key: bio
+      value: 'A short bio about the user.'
+      description: Short biography displayed on the profile page
+    - key: location
+      value: 'Lagos, Nigeria'
+      description: User location
+    - key: birth_date
+      value: '1995-06-15'
+      description: 'Date of birth in YYYY-MM-DD format'
+order: 5000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Successful update redirects to profile page (302)
+      // Validation error re-renders the form (200)
+      // Unauthenticated: redirects to login (302)
+      pm.test("Edit profile returns 200 or 302", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(5000);
+      });
+
+      if (pm.response.code === 200) {
+          pm.test("No server error on profile update", function () {
+              const body = pm.response.text();
+              pm.expect(body).to.not.include("500");
+              pm.expect(body).to.not.include("Server Error");
+          });
+      }

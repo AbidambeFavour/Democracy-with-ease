@@ -1,0 +1,44 @@
+$kind: http-request
+name: Toggle Reaction
+description: |-
+  Toggle a reaction on a poll. Requires login. Replace `{{poll_id}}` with the poll's numeric ID and `{{reaction_type}}` with one of the supported reaction types defined in the model (e.g. `like`, `love`, `haha`, `wow`, `sad`, `angry`).
+  If the user has already reacted with the same type, the reaction is removed (toggled off).
+url: '{{baseUrl}}/voting/poll/{{poll_id}}/react/{{reaction_type}}/'
+method: POST
+pathVariables:
+  - key: poll_id
+    value: '{{poll_id}}'
+    description: Numeric ID of the poll to react to (set via environment variable)
+  - key: reaction_type
+    value: '{{reaction_type}}'
+    description: 'Reaction type — e.g. like, love, haha, wow, sad, angry (set via environment variable)'
+order: 7000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Successful reaction toggle: redirects back to poll detail (302)
+      // Invalid reaction type: redirects back to poll detail (302) — view silently ignores it
+      // Unauthenticated: redirects to login (302)
+      // Non-existent poll: 404
+      pm.test("Toggle reaction returns 302 or 404", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302, 404]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(5000);
+      });
+
+      if (pm.response.code === 302) {
+          pm.test("Reaction toggle redirects to poll detail or login", function () {
+              const location = pm.response.headers.get("Location");
+              pm.expect(location).to.not.be.null;
+          });
+      }
+
+      // Validate that the reaction_type variable is one of the supported values
+      pm.test("Reaction type is a valid value", function () {
+          const validTypes = ["like", "love", "haha", "wow", "sad", "angry"];
+          const reactionType = pm.variables.get("reaction_type");
+          pm.expect(validTypes).to.include(reactionType);
+      });

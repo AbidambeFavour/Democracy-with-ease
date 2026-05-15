@@ -1,0 +1,937 @@
+{
+  "info": {
+    "name": "Django Voting System API",
+    "description": "Complete API collection for testing Django Voting System with authentication, polls, voting, comments, and user management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "csrf_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "session_cookie",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Auto-get CSRF token for POST requests",
+          "if (pm.request.method === 'POST' || pm.request.method === 'PUT' || pm.request.method === 'DELETE') {",
+          "    if (!pm.collectionVariables.get('csrf_token')) {",
+          "        pm.sendRequest({",
+          "            url: pm.collectionVariables.get('baseUrl') + '/accounts/login/',",
+          "            method: 'GET'",
+          "        }, function (err, res) {",
+          "            if (!err) {",
+          "                const html = res.text();",
+          "                const csrfMatch = html.match(/name='csrfmiddlewaretoken' value='([^']+)'/);",
+          "                if (csrfMatch) {",
+          "                    pm.collectionVariables.set('csrf_token', csrfMatch[1]);",
+          "                }",
+          "            }",
+          "        });",
+          "    }",
+          "}"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Get CSRF Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/login/",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "login", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"CSRF token extracted\", function() {",
+                  "    const html = pm.response.text();",
+                  "    const csrfMatch = html.match(/name='csrfmiddlewaretoken' value='([^']+)'/);",
+                  "    if (csrfMatch) {",
+                  "        pm.collectionVariables.set('csrf_token', csrfMatch[1]);",
+                  "        console.log(\"CSRF Token:\", csrfMatch[1]);",
+                  "    }",
+                  "    pm.expect(csrfMatch).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "testuser{{$randomInt}}",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "test{{$randomInt}}@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password1",
+                  "value": "SecurePass123",
+                  "type": "text"
+                },
+                {
+                  "key": "password2",
+                  "value": "SecurePass123",
+                  "type": "text"
+                },
+                {
+                  "key": "first_name",
+                  "value": "Test",
+                  "type": "text"
+                },
+                {
+                  "key": "last_name",
+                  "value": "User",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/register/",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "register", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Registration successful\", function() {",
+                  "    pm.response.to.have.status(302);",
+                  "});",
+                  "",
+                  "pm.test(\"No error messages\", function() {",
+                  "    const text = pm.response.text();",
+                  "    pm.expect(text).to.not.include(\"error\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "testuser",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "SecurePass123",
+                  "type": "text"
+                },
+                {
+                  "key": "csrfmiddlewaretoken",
+                  "value": "{{csrf_token}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/login/",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "login", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Login successful\", function() {",
+                  "    pm.response.to.have.status(302);",
+                  "});",
+                  "",
+                  "// Extract session cookie",
+                  "const cookies = pm.response.headers.get('Set-Cookie');",
+                  "if (cookies) {",
+                  "    pm.collectionVariables.set('session_cookie', cookies);",
+                  "    console.log(\"Session cookie saved:\", cookies);",
+                  "}",
+                  "",
+                  "pm.test(\"Session cookie set\", function() {",
+                  "    const cookies = pm.response.headers.get('Set-Cookie');",
+                  "    pm.expect(cookies).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{session_cookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/logout/",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "logout", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Logout successful\", function() {",
+                  "    pm.response.to.have.status(302);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🏠 Public Endpoints",
+      "item": [
+        {
+          "name": "Get Landing Page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Landing page loads\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Contains featured polls\", function() {",
+                  "    const text = pm.response.text();",
+                  "    pm.expect(text).to.include(\"poll\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Poll List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/voting/",
+              "host": ["{{baseUrl}}"],
+              "path": ["voting", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Poll list loads\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Contains poll data\", function() {",
+                  "    const text = pm.response.text();",
+                  "    pm.expect(text).to.include(\"poll\") || pm.expect(text).to.include(\"No polls\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Poll List - Active Only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/voting/?status=active",
+              "host": ["{{baseUrl}}"],
+              "path": ["voting", ""],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Poll Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/voting/poll/1/",
+              "host": ["{{baseUrl}}"],
+              "path": ["voting", "poll", "1", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Poll detail loads or 404\", function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔒 Authenticated Endpoints",
+      "item": [
+        {
+          "name": "Get User Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{session_cookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/dashboard/",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "dashboard", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Dashboard accessible\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Contains user data\", function() {",
+                  "    const text = pm.response.text();",
+                  "    pm.expect(text).to.include(\"dashboard\") || pm.expect(text).to.include(\"Welcome\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create New Poll",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{session_cookie}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Test Poll from Postman",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "This is a test poll created via Postman API",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "tags",
+                  "value": "test,postman,api",
+                  "type": "text"
+                },
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01",
+                  "type": "text"
+                },
+                {
+                  "key": "start_time",
+                  "value": "10:00",
+                  "type": "text"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-12-31",
+                  "type": "text"
+                },
+                {
+                  "key": "end_time",
+                  "value": "23:59",
+                  "type": "text"
+                },
+                {
+                  "key": "is_public",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "allow_multiple_votes",
+                  "value": "false",
+                  "type": "text"
+                },
+                {
+                  "key": "max_votes_per_user",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "show_results_immediately",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "choice_1",
+                  "value": "Python",
+                  "type": "text"
+                },
+                {
+                  "key": "choice_2",
+                  "value": "JavaScript",
+                  "type": "text"
+                },
+                {
+                  "key": "choice_3",
+                  "value": "Java",
+                  "type": "text"
+                },
+                {
+                  "key": "csrfmiddlewaretoken",
+                  "value": "{{csrf_token}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/voting/create/",
+              "host": ["{{baseUrl}}"],
+              "path": ["voting", "create", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Poll creation successful\", function() {",
+                  "    pm.response.to.have.status(302);",
+                  "});",
+                  "",
+                  "pm.test(\"No error messages\", function() {",
+                  "    const text = pm.response.text();",
+                  "    pm.expect(text).to.not.include(\"error\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vote in Poll",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{session_cookie}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "choice",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "csrfmiddlewaretoken",
+                  "value": "{{csrf_token}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/voting/poll/1/",
+              "host": ["{{baseUrl}}"],
+              "path": ["voting", "poll", "1", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Vote recorded\", function() {",
+                  "    pm.response.to.have.status(302);",
+                  "});",
+                  "",
+                  "pm.test(\"Success message present\", function() {",
+                  "    const text = pm.response.text();",
+                  "    pm.expect(text).to.include(\"success\") || pm.expect(text).to.include(\"vote\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Comment to Poll",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{session_cookie}}"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "content",
+                  "value": "Great poll! I love voting in Postman tests.",
+                  "type": "text"
+                },
+                {
+                  "key": "csrfmiddlewaretoken",
+                  "value": "{{csrf_token}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/voting/poll/1/comment/",
+              "host": ["{{baseUrl}}"],
+              "path": ["voting", "poll", "1", "comment", ""]
+            }
+          }
+        },
+        {
+          "name": "Like Poll",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{session_cookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/voting/poll/1/react/like/",
+              "host": ["{{baseUrl}}"],
+              "path": ["voting", "poll", "1", "react", "like", ""]
+            }
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{session_cookie}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "first_name",
+                  "value": "Updated",
+                  "type": "text"
+                },
+                {
+                  "key": "last_name",
+                  "value": "Name",
+                  "type": "text"
+                },
+                {
+                  "key": "bio",
+                  "value": "Updated bio from Postman",
+                  "type": "text"
+                },
+                {
+                  "key": "location",
+                  "value": "Test City",
+                  "type": "text"
+                },
+                {
+                  "key": "website",
+                  "value": "https://example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "email_notifications",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "public_profile",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "csrfmiddlewaretoken",
+                  "value": "{{csrf_token}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/profile/",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "profile", ""]
+            }
+          }
+        },
+        {
+          "name": "Toggle Online Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{session_cookie}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/toggle-online/",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "toggle-online", ""]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"JSON response\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔍 Test Scenarios",
+      "item": [
+        {
+          "name": "Complete User Journey",
+          "item": [
+            {
+              "name": "1. Register",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Generate unique user data for this test",
+                      "pm.collectionVariables.set('test_username', 'testuser' + Date.now());",
+                      "pm.collectionVariables.set('test_email', 'test' + Date.now() + '@example.com');"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "username",
+                      "value": "{{test_username}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "email",
+                      "value": "{{test_email}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "password1",
+                      "value": "SecurePass123",
+                      "type": "text"
+                    },
+                    {
+                      "key": "password2",
+                      "value": "SecurePass123",
+                      "type": "text"
+                    },
+                    {
+                      "key": "first_name",
+                      "value": "Test",
+                      "type": "text"
+                    },
+                    {
+                      "key": "last_name",
+                      "value": "User",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/accounts/register/",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["accounts", "register", ""]
+                }
+              }
+            },
+            {
+              "name": "2. Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  }
+                ],
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "username",
+                      "value": "{{test_username}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "password",
+                      "value": "SecurePass123",
+                      "type": "text"
+                    },
+                    {
+                      "key": "csrfmiddlewaretoken",
+                      "value": "{{csrf_token}}",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/accounts/login/",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["accounts", "login", ""]
+                }
+              }
+            },
+            {
+              "name": "3. Create Poll",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "multipart/form-data"
+                  },
+                  {
+                    "key": "Cookie",
+                    "value": "{{session_cookie}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "title",
+                      "value": "Journey Test Poll",
+                      "type": "text"
+                    },
+                    {
+                      "key": "description",
+                      "value": "Created during user journey test",
+                      "type": "text"
+                    },
+                    {
+                      "key": "start_date",
+                      "value": "2024-01-01",
+                      "type": "text"
+                    },
+                    {
+                      "key": "start_time",
+                      "value": "10:00",
+                      "type": "text"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2024-12-31",
+                      "type": "text"
+                    },
+                    {
+                      "key": "end_time",
+                      "value": "23:59",
+                      "type": "text"
+                    },
+                    {
+                      "key": "is_public",
+                      "value": "true",
+                      "type": "text"
+                    },
+                    {
+                      "key": "choice_1",
+                      "value": "Option A",
+                      "type": "text"
+                    },
+                    {
+                      "key": "choice_2",
+                      "value": "Option B",
+                      "type": "text"
+                    },
+                    {
+                      "key": "csrfmiddlewaretoken",
+                      "value": "{{csrf_token}}",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/voting/create/",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["voting", "create", ""]
+                }
+              }
+            },
+            {
+              "name": "4. Logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Cookie",
+                    "value": "{{session_cookie}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/accounts/logout/",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["accounts", "logout", ""]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

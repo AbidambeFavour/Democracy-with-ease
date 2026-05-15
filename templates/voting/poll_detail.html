@@ -3,688 +3,260 @@
 {% block title %}{{ poll.title }} - SimpleVote{% endblock %}
 
 {% block extra_css %}
-<!-- Font Awesome 6 (Free) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<!-- Google Fonts: Inter + Playfair Display -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
-    /* ===== RESET & BASE STYLES ===== */
-    body, body.landing-page, html body {
-        background: transparent !important;
-        font-family: 'Inter', sans-serif !important;
-        color: #1a1a2e !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        min-height: 100vh !important;
-    }
-    
-    /* Set background on html instead to allow animated background to show */
-    html {
-        background: #4a5568 !important;
-    }
-
-    /* Remove any white backgrounds/containers from base template */
-    .container, .container-fluid, main, .main-content, [class*="container"] {
-        background: transparent !important;
-        max-width: none !important;
-        padding: 0 40px !important;
-        margin: 0 !important;
-        width: 100% !important;
-    }
-    
-    /* Ensure full width layout */
-    html, body {
-        overflow-x: hidden !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* ===== ANIMATED BACKGROUND ===== */
-    .animated-bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        overflow: hidden;
-        pointer-events: none;
-    }
-
-    .animated-bg::before {
-        content: '';
-        position: absolute;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(
-            45deg,
-            rgba(255, 255, 255, 0.15) 0%,
-            rgba(255, 255, 255, 0.1) 25%,
-            transparent 50%,
-            rgba(255, 255, 255, 0.1) 75%,
-            transparent 100%
-        );
-        animation: wave 20s infinite linear;
-    }
-
-    @keyframes wave {
-        0% { transform: translate(-30%, -30%) rotate(0deg); }
-        100% { transform: translate(30%, 30%) rotate(5deg); }
-    }
-
-    /* ===== FLOATING PARTICLES ===== */
-    .particles {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        pointer-events: none;
-    }
-
-    .particle {
-        position: absolute;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        animation: float 20s infinite ease-in-out;
-    }
-
-    .particle:nth-child(1) {
-        width: 400px;
-        height: 400px;
-        top: 5%;
-        left: 5%;
-        animation-duration: 25s;
-    }
-    
-    .particle:nth-child(2) {
-        width: 300px;
-        height: 300px;
-        bottom: 10%;
-        right: 5%;
-        animation-duration: 20s;
-        animation-delay: -5s;
-    }
-    
-    .particle:nth-child(3) {
-        width: 200px;
-        height: 200px;
-        top: 30%;
-        right: 20%;
-        animation-duration: 15s;
-        animation-delay: -2s;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translate(0, 0) rotate(0deg); }
-        25% { transform: translate(-30px, 30px) rotate(5deg); }
-        50% { transform: translate(30px, -20px) rotate(-5deg); }
-        75% { transform: translate(20px, 30px) rotate(3deg); }
-    }
-
-    /* ===== MAIN CONTAINER ===== */
-    .poll-detail-container {
-        max-width: 900px;
+    .poll-detail {
+        max-width: 920px;
         margin: 0 auto;
-        padding: 0;
-        position: relative;
-        background: transparent;
-        width: 100%;
-        min-height: 100vh;
-        padding-top: 120px;
+        display: grid;
+        gap: 24px;
     }
 
-    /* ===== NAVIGATION ===== */
-    nav {
+    .poll-header-card,
+    .content-card,
+    .results-chart {
+        padding: 30px;
+    }
+
+    .stack {
+        display: grid;
+        gap: 16px;
+    }
+
+    .poll-title-section,
+    .result-header,
+    .meta-grid {
         display: flex;
+        gap: 16px;
         justify-content: space-between;
-        align-items: center;
-        padding: 30px 40px;
-        animation: slideDown 1s ease-out;
-        background: transparent;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-    }
-
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        text-decoration: none;
-    }
-
-    .logo-icon {
-        width: 50px;
-        height: 50px;
-        background: white;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        color: #667eea;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        transform: rotate(-5deg);
-        transition: all 0.3s ease;
-    }
-
-    .logo:hover .logo-icon {
-        transform: rotate(0deg) scale(1.1);
-    }
-
-    .logo-text {
-        font-size: 28px;
-        font-weight: 800;
-        color: white;
-        letter-spacing: -0.5px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .logo-text span {
-        color: #ffd93d;
-        font-weight: 400;
-        font-family: 'Playfair Display', serif;
-    }
-
-    .nav-links {
-        display: flex;
-        gap: 20px;
-        align-items: center;
-    }
-
-    .nav-links a {
-        color: white;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 14px;
-        opacity: 0.9;
-        transition: all 0.3s ease;
-        padding: 8px 16px;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
-    }
-
-    .nav-links a:hover {
-        opacity: 1;
-        transform: translateY(-2px);
-        background: rgba(255,255,255,0.2);
-    }
-
-    /* ===== POLL HEADER CARD ===== */
-    .poll-header-card {
-        background: rgba(255,255,255,0.98);
-        backdrop-filter: blur(10px);
-        border-radius: 30px;
-        padding: 40px;
-        box-shadow: 0 30px 50px rgba(0,0,0,0.3);
-        position: relative;
-        overflow: hidden;
-        border: 2px solid rgba(255,255,255,0.3);
-        animation: fadeInUp 1s ease-out;
-        margin-bottom: 30px;
-    }
-
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(40px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .poll-header-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        animation: shine 8s infinite;
-    }
-
-    @keyframes shine {
-        0% { left: -100%; }
-        20% { left: 100%; }
-        100% { left: 100%; }
     }
 
     .poll-title-section {
-        display: flex;
-        justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 20px;
-    }
-
-    .poll-title {
-        font-size: 32px;
-        font-weight: 800;
-        color: #2d3748;
-        margin-bottom: 10px;
-        line-height: 1.3;
-    }
-
-    .poll-status {
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        white-space: nowrap;
-    }
-
-    .status-active {
-        background: linear-gradient(135deg, #48bb78, #38a169);
-        color: white;
-    }
-
-    .status-closed {
-        background: linear-gradient(135deg, #718096, #4a5568);
-        color: white;
-    }
-
-    .status-upcoming {
-        background: linear-gradient(135deg, #f6ad55, #ed8936);
-        color: white;
+        margin-bottom: 14px;
     }
 
     .poll-description {
-        color: #718096;
-        font-size: 18px;
-        line-height: 1.6;
-        margin-bottom: 25px;
+        margin-bottom: 22px;
+        font-size: 1rem;
     }
 
-    .poll-meta {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
+    .meta-grid {
+        flex-wrap: wrap;
         padding-top: 20px;
-        border-top: 2px solid #e2e8f0;
+        border-top: 1px solid var(--line);
     }
 
     .meta-item {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 10px;
-        font-size: 15px;
-        color: #718096;
+        color: var(--muted);
     }
 
-    .meta-item i {
-        color: #667eea;
-        width: 20px;
+    .meta-item i,
+    .card-title i {
+        color: var(--accent-text);
     }
 
-    /* ===== CONTENT CARDS ===== */
-    .content-card {
-        background: rgba(255,255,255,0.98);
-        backdrop-filter: blur(10px);
-        border-radius: 25px;
-        padding: 35px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        position: relative;
-        overflow: hidden;
-        border: 2px solid rgba(255,255,255,0.3);
-        animation: fadeInUp 1s ease-out 0.2s forwards;
-        opacity: 0;
-        margin-bottom: 30px;
+    .reaction-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
     }
 
-    .content-card:nth-child(2) { animation-delay: 0.3s; }
-    .content-card:nth-child(3) { animation-delay: 0.4s; }
+    .reaction-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--panel-muted);
+        text-decoration: none;
+        color: var(--text);
+        font-weight: 600;
+    }
 
-    .content-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        animation: shine 8s infinite;
+    .reaction-btn.active {
+        border-color: rgba(37, 99, 235, 0.34);
+        background: var(--accent-soft);
+        color: var(--accent-text);
     }
 
     .card-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 25px;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
+        margin-bottom: 18px;
     }
 
-    .card-title i {
-        color: #667eea;
-    }
-
-    /* ===== VOTING OPTIONS ===== */
     .vote-options {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        margin-bottom: 25px;
+        display: grid;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .vote-option,
+    .result-item {
+        padding: 18px;
+        border-radius: var(--radius-md);
+        background: var(--panel-muted);
+        border: 1px solid var(--line);
+        transition: 0.2s ease;
     }
 
     .vote-option {
-        background: #f8fafd;
-        border: 2px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 20px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
     }
 
-    .vote-option:hover {
-        border-color: #667eea;
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.1);
-    }
-
+    .vote-option:hover,
     .vote-option.selected {
-        border-color: #667eea;
-        background: rgba(102, 126, 234, 0.05);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
-    }
-
-    .vote-option.selected::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-color: rgba(37, 99, 235, 0.34);
+        background: var(--accent-soft);
     }
 
     .vote-option-content {
         display: flex;
         align-items: center;
-        gap: 15px;
+        gap: 14px;
     }
 
     .vote-radio {
-        width: 24px;
-        height: 24px;
-        border: 3px solid #cbd5e0;
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
-        position: relative;
-        transition: all 0.3s ease;
+        border: 2px solid var(--field-border);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
 
     .vote-option.selected .vote-radio {
-        border-color: #667eea;
-    }
-
-    .vote-radio::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0);
-        width: 12px;
-        height: 12px;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 50%;
-        transition: transform 0.3s ease;
+        border-color: rgba(37, 99, 235, 0.55);
     }
 
     .vote-option.selected .vote-radio::after {
-        transform: translate(-50%, -50%) scale(1);
+        content: '';
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--primary);
     }
 
-    .vote-text {
-        font-size: 16px;
-        font-weight: 500;
-        color: #2d3748;
+    .vote-text,
+    .result-name,
+    .status-title {
+        color: var(--heading);
+        font-weight: 700;
     }
 
     .btn-vote {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        border-radius: 20px;
-        padding: 15px 40px;
-        font-weight: 700;
-        font-size: 18px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         width: 100%;
+        padding: 14px 18px;
     }
 
-    .btn-vote:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-vote:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    /* ===== STATUS MESSAGES ===== */
     .status-message {
         text-align: center;
-        padding: 40px;
+        padding: 12px 0;
     }
 
     .status-icon {
-        font-size: 64px;
-        margin-bottom: 20px;
+        font-size: 2.8rem;
+        margin-bottom: 12px;
     }
 
-    .status-icon.success {
-        color: #48bb78;
-    }
+    .status-icon.success { color: var(--success-text); }
+    .status-icon.warning { color: var(--warning-text); }
 
-    .status-icon.warning {
-        color: #f6ad55;
-    }
-
-    .status-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 10px;
-    }
-
-    .status-description {
-        color: #718096;
-        font-size: 16px;
-        line-height: 1.6;
-        margin-bottom: 15px;
-    }
-
-    .status-meta {
-        color: #a0aec0;
-        font-size: 14px;
-    }
-
-    /* ===== RESULTS ===== */
     .results-chart {
-        margin-bottom: 30px;
-        background: white;
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    .result-item {
-        margin-bottom: 20px;
-        padding: 20px;
-        background: #f8fafd;
-        border-radius: 15px;
-        border: 2px solid #e2e8f0;
+        margin-bottom: 18px;
     }
 
     .result-header {
-        display: flex;
-        justify-content: space-between;
         align-items: center;
         margin-bottom: 10px;
     }
 
-    .result-name {
-        font-weight: 600;
-        color: #2d3748;
-        font-size: 16px;
-    }
-
     .result-votes {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        padding: 5px 12px;
-        border-radius: 15px;
-        font-size: 14px;
-        font-weight: 600;
+        color: var(--accent-text);
+        font-weight: 700;
     }
 
     .result-bar-container {
-        height: 30px;
-        background: #e2e8f0;
-        border-radius: 15px;
+        height: 28px;
+        border-radius: 999px;
         overflow: hidden;
-        position: relative;
+        background: var(--chip-bg);
     }
 
     .result-bar {
         height: 100%;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border-radius: 15px;
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        padding-right: 10px;
-        color: white;
-        font-weight: 600;
-        font-size: 14px;
+        padding-right: 12px;
+        color: #fff;
+        background: var(--primary);
+        border-radius: 999px;
+        font-weight: 700;
         transition: width 1s ease-out;
     }
 
     .total-votes {
-        text-align: center;
-        font-size: 20px;
-        font-weight: 700;
-        color: #2d3748;
         margin-top: 20px;
+        text-align: center;
+        font-weight: 700;
+        color: var(--heading);
     }
 
-    /* ===== RESPONSIVE DESIGN ===== */
+    .comment-list {
+        display: grid;
+        gap: 14px;
+    }
+
+    .comment-card {
+        padding: 18px;
+        border-radius: var(--radius-md);
+        background: var(--panel-muted);
+        border: 1px solid var(--line);
+    }
+
+    .comment-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 0.92rem;
+    }
+
+    .comment-form textarea {
+        min-height: 120px;
+        margin-bottom: 14px;
+    }
+
     @media (max-width: 768px) {
-        .container, .container-fluid {
-            padding: 0 20px !important;
-        }
-        
-        .poll-detail-container {
-            padding-top: 100px;
-        }
-        
-        .poll-header-card,
-        .content-card {
-            padding: 25px 20px;
-        }
-        
-        .poll-title {
-            font-size: 24px;
-        }
-        
-        .poll-title-section {
+        .poll-title-section,
+        .meta-grid,
+        .result-header {
             flex-direction: column;
-            gap: 15px;
-        }
-        
-        .poll-meta {
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        
-        nav {
-            padding: 20px;
-        }
-        
-        .logo-text {
-            font-size: 24px;
-        }
-        
-        .nav-links {
-            display: none;
+            align-items: flex-start;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Animated Background -->
-<div class="animated-bg"></div>
-
-<!-- Floating Particles -->
-<div class="particles">
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-</div>
-
-<!-- Navigation -->
-<nav>
-    <a href="{% url 'accounts:landing' %}" class="logo">
-        <div class="logo-icon">
-            <i class="fas fa-check-double"></i>
-        </div>
-        <div class="logo-text">Simple<span>Vote</span></div>
-    </a>
-    <div class="nav-links">
-        <a href="{% url 'voting:poll_list' %}">
-            <i class="fas fa-list"></i> Browse
-        </a>
-        <a href="{% url 'voting:create_poll' %}">
-            <i class="fas fa-plus"></i> Create
-        </a>
-        <a href="{% url 'accounts:dashboard' %}">
-            <i class="fas fa-tachometer-alt"></i> Dashboard
-        </a>
-        <a href="{% url 'accounts:logout' %}">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </a>
-    </div>
-</nav>
-
-<!-- Main Poll Detail Container -->
-<div class="poll-detail-container">
-    <!-- Poll Header -->
-    <div class="poll-header-card">
+<div class="poll-detail">
+    <section class="poll-header-card">
         <div class="poll-title-section">
-            <h1 class="poll-title">{{ poll.title }}</h1>
+            <div>
+                <span class="eyebrow"><i class="fas fa-square-poll-vertical"></i> Poll details</span>
+                <h1 style="margin-top: 16px;">{{ poll.title }}</h1>
+            </div>
             {% if poll.get_status == 'Active' %}
                 <span class="poll-status status-active">Active</span>
             {% elif poll.get_status == 'Closed' %}
@@ -693,31 +265,36 @@
                 <span class="poll-status status-upcoming">Upcoming</span>
             {% endif %}
         </div>
-        
+
         {% if poll.description %}
             <p class="poll-description">{{ poll.description }}</p>
         {% endif %}
-        
-        <div class="poll-meta">
-            <div class="meta-item">
-                <i class="fas fa-play"></i>
-                <span>Start: {{ poll.start_date|date:"M d, Y H:i" }}</span>
-            </div>
-            <div class="meta-item">
-                <i class="fas fa-stop"></i>
-                <span>End: {{ poll.end_date|date:"M d, Y H:i" }}</span>
-            </div>
-        </div>
-    </div>
 
-    <!-- Voting Form (for active polls) -->
+        <div class="meta-grid">
+            <div class="meta-item"><i class="fas fa-play"></i> Start: {{ poll.start_date|date:"M d, Y H:i" }}</div>
+            <div class="meta-item"><i class="fas fa-stop"></i> End: {{ poll.end_date|date:"M d, Y H:i" }}</div>
+            <div class="meta-item"><i class="fas fa-user"></i> Created by {{ poll.creator.username|default:"System" }}</div>
+            {% if poll.category %}
+                <div class="meta-item"><i class="fas fa-folder-open"></i> {{ poll.category.name }}</div>
+            {% endif %}
+        </div>
+
+        {% if user.is_authenticated %}
+            <div class="reaction-row">
+                {% for reaction in reaction_summary %}
+                    <a href="{% url 'voting:toggle_reaction' poll.id reaction.type %}"
+                       class="reaction-btn {% if user_reaction and user_reaction.reaction_type == reaction.type %}active{% endif %}">
+                        <span>{{ reaction.label }}</span>
+                        <span>{{ reaction.count }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+
     {% if poll.is_active and not has_voted %}
-        <div class="content-card">
-            <h3 class="card-title">
-                <i class="fas fa-vote-yea"></i>
-                Cast Your Vote
-            </h3>
-            
+        <section class="content-card">
+            <h2 class="card-title"><i class="fas fa-vote-yea"></i> Cast Your Vote</h2>
             <form method="post" id="voting-form">
                 {% csrf_token %}
                 <div class="vote-options">
@@ -725,55 +302,37 @@
                         <label class="vote-option">
                             <div class="vote-option-content">
                                 <div class="vote-radio"></div>
-                                <input type="radio" name="choice" value="{{ choice.id }}" required style="display: none;">
+                                <input type="radio" name="choice" value="{{ choice.id }}" required style="display:none;">
                                 <span class="vote-text">{{ choice.choice_text }}</span>
                             </div>
                         </label>
                     {% endfor %}
                 </div>
-                
-                <button type="submit" class="btn-vote">
-                    <i class="fas fa-paper-plane"></i>
-                    Submit Vote
-                </button>
+                <button type="submit" class="btn btn-primary btn-vote"><i class="fas fa-paper-plane"></i> Submit Vote</button>
             </form>
-        </div>
+        </section>
     {% endif %}
 
-    <!-- Already Voted Message (for active polls where user has voted) -->
     {% if poll.is_active and has_voted %}
-        <div class="content-card">
+        <section class="content-card">
             <div class="status-message">
-                <div class="status-icon success">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h3 class="status-title">Vote Recorded!</h3>
-                <p class="status-description">
-                    You have successfully voted in this poll. Results will be available when the poll closes.
-                </p>
-                <div class="status-meta">
-                    <i class="fas fa-clock"></i>
-                    Poll closes: {{ poll.end_date|date:"M d, Y H:i" }}
-                </div>
+                <div class="status-icon success"><i class="fas fa-circle-check"></i></div>
+                <h2 class="status-title">Vote recorded</h2>
+                <p>You have already voted in this poll. Final results will appear once voting closes.</p>
+                <p class="muted">Poll closes on {{ poll.end_date|date:"M d, Y H:i" }}</p>
             </div>
-        </div>
+        </section>
     {% endif %}
 
-    <!-- Results (for closed polls) -->
     {% if poll.is_closed %}
-        <div class="content-card">
-            <h3 class="card-title">
-                <i class="fas fa-chart-bar"></i>
-                Final Results
-            </h3>
-            
+        <section class="content-card">
+            <h2 class="card-title"><i class="fas fa-chart-column"></i> Final Results</h2>
             <div class="results-chart">
-                <canvas id="resultsChart" width="400" height="200" 
+                <canvas id="resultsChart" width="400" height="200"
                         data-labels="{% for choice, vote_count in results.items %}{{ choice.choice_text|escapejs }}{% if not forloop.last %}|{% endif %}{% endfor %}"
-                        data-data="{% for choice, vote_count in results.items %}{{ vote_count }}{% if not forloop.last %},{% endif %}{% endfor %}">
-                </canvas>
+                        data-data="{% for choice, vote_count in results.items %}{{ vote_count }}{% if not forloop.last %},{% endif %}{% endfor %}"></canvas>
             </div>
-            
+
             {% for choice, vote_count in results.items %}
                 <div class="result-item">
                     <div class="result-header">
@@ -783,168 +342,146 @@
                     <div class="result-bar-container">
                         {% if poll.get_total_votes > 0 %}
                             {% with percentage=choice.get_vote_percentage %}
-                                <div class="result-bar" style="width: {{ percentage|floatformat:1 }}%">
-                                    {{ percentage|floatformat:1 }}%
-                                </div>
+                                <div class="result-bar" style="width: {{ percentage|floatformat:1 }}%">{{ percentage|floatformat:1 }}%</div>
                             {% endwith %}
                         {% else %}
-                            <div class="result-bar" style="width: 0%">
-                                0%
-                            </div>
+                            <div class="result-bar" style="width: 0%">0%</div>
                         {% endif %}
                     </div>
                 </div>
             {% endfor %}
-            
-            <div class="total-votes">
-                Total Votes: {{ poll.get_total_votes }}
-            </div>
-        </div>
+
+            <div class="total-votes">Total Votes: {{ poll.get_total_votes }}</div>
+        </section>
     {% endif %}
 
-    <!-- Poll Not Started -->
     {% if not poll.has_started %}
-        <div class="content-card">
+        <section class="content-card">
             <div class="status-message">
-                <div class="status-icon warning">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h3 class="status-title">Poll Not Started</h3>
-                <p class="status-description">
-                    This poll will start on {{ poll.start_date|date:"M d, Y H:i" }}
-                </p>
-                <div class="status-meta">
-                    <i class="fas fa-hourglass-half"></i>
-                    Waiting for poll to begin
-                </div>
+                <div class="status-icon warning"><i class="fas fa-clock"></i></div>
+                <h2 class="status-title">Poll not started yet</h2>
+                <p>This poll opens on {{ poll.start_date|date:"M d, Y H:i" }}.</p>
+                <p class="muted">Come back when voting begins.</p>
             </div>
-        </div>
+        </section>
     {% endif %}
+
+    <section class="content-card stack">
+        <div>
+            <h2 class="card-title"><i class="fas fa-comments"></i> Discussion</h2>
+            <p>Keep the conversation tied to the poll so voters understand the context.</p>
+        </div>
+
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'voting:add_comment' poll.id %}" class="comment-form">
+                {% csrf_token %}
+                <textarea name="content" class="form-control" placeholder="Share your thoughts about this poll..." required></textarea>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Post Comment</button>
+            </form>
+        {% else %}
+            <div class="status-message">
+                <p><a href="{% url 'accounts:login' %}" class="btn btn-secondary">Sign in</a> to comment or react to this poll.</p>
+            </div>
+        {% endif %}
+
+        <div class="comment-list">
+            {% for comment in comments %}
+                <article class="comment-card">
+                    <div class="comment-meta">
+                        <strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong>
+                        <span>{{ comment.created_at|timesince }} ago</span>
+                    </div>
+                    <p>{{ comment.content }}</p>
+                </article>
+            {% empty %}
+                <div class="comment-card">
+                    <p>No comments yet. Start the discussion.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Vote option selection
+    const themeStyles = getComputedStyle(document.documentElement);
+    const chartTickColor = themeStyles.getPropertyValue('--muted').trim() || '#64748b';
+    const chartGridColor = themeStyles.getPropertyValue('--line').trim() || 'rgba(148, 163, 184, 0.12)';
+    const chartTitleColor = themeStyles.getPropertyValue('--heading').trim() || '#0f172a';
+    const chartColors = [
+        themeStyles.getPropertyValue('--primary').trim() || '#2563eb',
+        '#7c3aed',
+        themeStyles.getPropertyValue('--success').trim() || '#16a34a',
+        themeStyles.getPropertyValue('--warning').trim() || '#d97706'
+    ];
+
     const voteOptions = document.querySelectorAll('.vote-option');
     const votingForm = document.getElementById('voting-form');
-    
-    if (voteOptions.length > 0) {
-        voteOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                // Remove selected class from all options
-                voteOptions.forEach(opt => opt.classList.remove('selected'));
-                // Add selected class to clicked option
-                this.classList.add('selected');
-                // Check the radio button
-                const radio = this.querySelector('input[type="radio"]');
-                radio.checked = true;
-            });
+
+    voteOptions.forEach(function(option) {
+        option.addEventListener('click', function() {
+            voteOptions.forEach(function(opt) { opt.classList.remove('selected'); });
+            this.classList.add('selected');
+            this.querySelector('input[type="radio"]').checked = true;
         });
-    }
-    
-    // Form submission
+    });
+
     if (votingForm) {
-        votingForm.addEventListener('submit', function(e) {
+        votingForm.addEventListener('submit', function() {
             const submitBtn = this.querySelector('.btn-vote');
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
             submitBtn.disabled = true;
         });
     }
-    
-    // Chart.js for results
+
     const resultsChart = document.getElementById('resultsChart');
     if (resultsChart) {
         const ctx = resultsChart.getContext('2d');
-        const chartLabels = resultsChart.dataset.labels.split('|');
-        const chartDataPoints = resultsChart.dataset.data.split(',').map(Number);
-        
-        const chartData = {
-            labels: chartLabels,
-            datasets: [{
-                label: 'Votes',
-                data: chartDataPoints,
-                backgroundColor: [
-                    'rgba(102, 126, 234, 0.8)',
-                    'rgba(118, 75, 162, 0.8)',
-                    'rgba(72, 187, 120, 0.8)',
-                    'rgba(246, 173, 85, 0.8)',
-                    'rgba(245, 101, 101, 0.8)',
-                    'rgba(113, 128, 150, 0.8)',
-                    'rgba(237, 137, 54, 0.8)',
-                    'rgba(32, 201, 151, 0.8)'
-                ],
-                borderColor: [
-                    'rgba(102, 126, 234, 1)',
-                    'rgba(118, 75, 162, 1)',
-                    'rgba(72, 187, 120, 1)',
-                    'rgba(246, 173, 85, 1)',
-                    'rgba(245, 101, 101, 1)',
-                    'rgba(113, 128, 150, 1)',
-                    'rgba(237, 137, 54, 1)',
-                    'rgba(32, 201, 151, 1)'
-                ],
-                borderWidth: 2,
-                borderRadius: 10
-            }]
-        };
+        const chartLabels = resultsChart.dataset.labels ? resultsChart.dataset.labels.split('|') : [];
+        const chartDataPoints = resultsChart.dataset.data ? resultsChart.dataset.data.split(',').map(Number) : [];
 
         new Chart(ctx, {
             type: 'bar',
-            data: chartData,
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Votes',
+                    data: chartDataPoints,
+                    backgroundColor: chartColors,
+                    borderRadius: 12,
+                    borderWidth: 0
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     title: {
                         display: true,
                         text: 'Vote Distribution',
-                        font: {
-                            size: 16,
-                            weight: 'bold'
-                        },
-                        color: '#2d3748'
+                        color: chartTitleColor,
+                        font: { size: 16, weight: '700' }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                            color: '#718096'
-                        },
-                        grid: {
-                            color: '#e2e8f0'
-                        }
+                        ticks: { stepSize: 1, color: chartTickColor },
+                        grid: { color: chartGridColor }
                     },
                     x: {
-                        ticks: {
-                            color: '#718096'
-                        },
-                        grid: {
-                            display: false
-                        }
+                        ticks: { color: chartTickColor },
+                        grid: { display: false }
                     }
                 }
             }
         });
-        
-        // Animate result bars
-        setTimeout(() => {
-            const resultBars = document.querySelectorAll('.result-bar');
-            resultBars.forEach(bar => {
-                const width = bar.style.width;
-                bar.style.width = '0%';
-                setTimeout(() => {
-                    bar.style.width = width;
-                }, 100);
-            });
-        }, 500);
     }
 });
 </script>
 {% endblock %}
+
+

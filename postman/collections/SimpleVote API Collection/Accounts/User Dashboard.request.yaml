@@ -1,0 +1,41 @@
+$kind: http-request
+name: User Dashboard
+description: Authenticated user dashboard. Requires a valid session cookie (log in first). Returns 302 redirect to login if unauthenticated.
+url: '{{baseUrl}}/accounts/dashboard/'
+method: GET
+order: 3000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Authenticated: renders dashboard (200)
+      // Unauthenticated: redirects to login (302)
+      pm.test("Dashboard returns 200 (authenticated) or 302 (redirect to login)", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(5000);
+      });
+
+      if (pm.response.code === 200) {
+          pm.test("Response is HTML", function () {
+              pm.expect(pm.response.headers.get("Content-Type")).to.include("text/html");
+          });
+
+          pm.test("Dashboard page contains expected content", function () {
+              const body = pm.response.text();
+              pm.expect(body).to.include("<html");
+              // Dashboard should reference the user or their activity
+              pm.expect(body.toLowerCase()).to.satisfy(function (b) {
+                  return b.includes("dashboard") || b.includes("poll") || b.includes("vote");
+              });
+          });
+      }
+
+      if (pm.response.code === 302) {
+          pm.test("Unauthenticated request redirects to login", function () {
+              const location = pm.response.headers.get("Location");
+              pm.expect(location).to.include("login");
+          });
+      }

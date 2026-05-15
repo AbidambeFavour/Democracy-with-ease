@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - SimpleVote{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-layout {
+        max-width: 960px;
+        margin: 0 auto;
+    }
+
+    .edit-card {
+        padding: 30px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+
+    .form-section {
+        padding: 22px;
+        border-radius: var(--radius-md);
+        background: var(--panel-muted);
+        border: 1px solid var(--line);
+        margin-bottom: 18px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-layout">
+    <section class="edit-card card">
+        <span class="eyebrow"><i class="fas fa-pen"></i> Update your account</span>
+        <h1 style="margin: 14px 0 8px;">Edit Profile</h1>
+        <p style="margin-bottom: 22px;">Keep your account details and preferences up to date.</p>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-section">
+                <h2 style="margin-bottom: 16px;">Personal Information</h2>
+                <div class="form-grid">
+                    {% for field in form %}
+                        <div>
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="error-text">{{ field.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2 style="margin-bottom: 16px;">Preferences</h2>
+                <div class="form-grid">
+                    {% for field in profile_form %}
+                        <div>
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="error-text">{{ field.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'accounts:profile' request.user.username %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save Changes</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{
+	"info": {
+		"_postman_id": "simplevote-api-collection",
+		"name": "SimpleVote API Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "simplevote-export"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "User Registration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "testuser123",
+									"description": "Unique username"
+								},
+								{
+									"key": "email",
+									"value": "testuser123@example.com",
+									"description": "User email address"
+								},
+								{
+									"key": "first_name",
+									"value": "Test",
+									"description": "User first name"
+								},
+								{
+									"key": "last_name",
+									"value": "User",
+									"description": "User last name"
+								},
+								{
+									"key": "password1",
+									"value": "complexpassword123",
+									"description": "Password confirmation"
+								},
+								{
+									"key": "password2",
+									"value": "complexpassword123",
+									"description": "Password confirmation"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/accounts/register/"
+						},
+						"description": "Register a new user account"
+					}
+				}
+			]
+		},
+		{
+			"name": "Poll Management",
+			"item": [
+				{
+					"name": "List All Polls",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "http://127.0.0.1:8000/voting/"
+						},
+						"description": "Get list of all polls with optional filtering"
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"description": "Base URL for the SimpleVote application"
+		}
+	]
+}

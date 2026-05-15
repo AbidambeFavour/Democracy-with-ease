@@ -1,0 +1,95 @@
+$kind: http-request
+name: Create Poll (POST)
+description: |-
+  Create a new poll. Requires login. At least two choices must be provided (choice_1, choice_2).
+  Dates should be in YYYY-MM-DD format and times in HH:MM format.
+  Set `is_public` to `on` to make the poll publicly visible.
+url: '{{baseUrl}}/voting/create/'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/x-www-form-urlencoded
+body:
+  type: urlencoded
+  content:
+    - key: title
+      value: 'Best programming language for beginners?'
+      description: Poll title (required)
+    - key: description
+      value: 'Vote for the language you think is easiest to learn as a first language.'
+      description: Detailed description of the poll (optional)
+    - key: category
+      value: Technology
+      description: Poll category (optional)
+    - key: tags
+      value: 'programming, beginners, coding'
+      description: Comma-separated tags (optional)
+    - key: start_date
+      value: '2025-01-01'
+      description: 'Poll start date in YYYY-MM-DD format'
+    - key: start_time
+      value: '08:00'
+      description: 'Poll start time in HH:MM format'
+    - key: end_date
+      value: '2025-12-31'
+      description: 'Poll end date in YYYY-MM-DD format'
+    - key: end_time
+      value: '23:59'
+      description: 'Poll end time in HH:MM format'
+    - key: is_public
+      value: 'on'
+      description: 'Set to "on" to make the poll publicly visible'
+    - key: allow_multiple_votes
+      value: 'off'
+      description: 'Set to "on" to allow voters to select multiple choices'
+    - key: max_votes_per_user
+      value: '1'
+      description: Maximum number of choices a single user can vote for
+    - key: show_results_immediately
+      value: 'on'
+      description: 'Set to "on" to show results to voters immediately after voting'
+    - key: choice_1
+      value: Python
+      description: First choice option (required)
+    - key: choice_2
+      value: JavaScript
+      description: Second choice option (required)
+    - key: choice_3
+      value: Scratch
+      description: Third choice option (optional — add more as needed)
+order: 5000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Successful creation redirects to the new poll's detail page (302)
+      // Validation error re-renders the form (200)
+      // Unauthenticated: redirects to login (302)
+      pm.test("Create poll returns 200 or 302", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 302]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(5000);
+      });
+
+      if (pm.response.code === 302) {
+          pm.test("Successful creation redirects to poll detail or login", function () {
+              const location = pm.response.headers.get("Location");
+              pm.expect(location).to.not.be.null;
+              // Extract new poll pk from redirect URL e.g. /voting/poll/5/
+              const match = location && location.match(/\/voting\/poll\/(\d+)\//);
+              if (match) {
+                  pm.collectionVariables.set("pk", match[1]);
+                  console.log("Captured new poll pk:", match[1]);
+              }
+          });
+      }
+
+      if (pm.response.code === 200) {
+          pm.test("No server error on create poll page", function () {
+              const body = pm.response.text();
+              pm.expect(body).to.not.include("500");
+              pm.expect(body).to.not.include("Server Error");
+          });
+      }

@@ -1,0 +1,18 @@
+$kind: collection
+order: 4000
+description: |-
+  Step 4 — Poll Management & Interactions. Test the full poll lifecycle.
+  All write operations (create, vote, comment, react) require an active session.
+
+  Recommended sequence:
+    1. List Polls              — browse all polls (no login required)
+    2. Poll Detail (GET)       — view a single poll by {{pk}}
+    3. Submit Vote (POST)      — cast a vote on the poll (requires login)
+    4. Create Poll Form (GET)  — load the create-poll form (requires login)
+    5. Create Poll (POST)      — submit a new poll; auto-captures new poll pk
+    6. Add Comment (POST)      — post a comment on a poll (requires login)
+    7. Toggle Reaction (POST)  — like/react to a poll (requires login)
+
+  Tip: After Create Poll (POST) succeeds, the {{pk}} collection variable is updated
+  automatically so Poll Detail, Submit Vote, Add Comment, and Toggle Reaction all
+  target the newly created poll.

@@ -1,0 +1,6 @@
+$kind: collection
+order: 1000
+description: |-
+  Step 1 — Smoke Test. Hit the root URL to confirm the Django dev server is running
+  and reachable before executing any other requests. If this fails, start the server
+  with `python manage.py runserver` before continuing.

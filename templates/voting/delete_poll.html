@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Poll - Super Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-confirmation {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 32px;
+        border: 1px solid var(--line);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .warning-header {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+    
+    .warning-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--danger-light);
+        color: var(--danger);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 2rem;
+    }
+    
+    .poll-details {
+        background: var(--surface);
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        border-left: 4px solid var(--danger);
+    }
+    
+    .poll-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+    }
+    
+    .poll-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    .meta-icon {
+        color: var(--primary);
+    }
+    
+    .danger-text {
+        color: var(--danger);
+        font-weight: 500;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-top: 32px;
+    }
+    
+    .btn-danger {
+        background: var(--danger);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    
+    .btn-danger:hover {
+        background: var(--danger-dark);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: var(--surface);
+        color: var(--text-primary);
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        border: 1px solid var(--line);
+        transition: background 0.2s;
+    }
+    
+    .btn-secondary:hover {
+        background: var(--surface-hover);
+        color: var(--text-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="delete-confirmation">
+        <div class="warning-header">
+            <div class="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h1>Delete Poll</h1>
+            <p class="text-muted">This action cannot be undone</p>
+        </div>
+
+        <div class="alert alert-danger">
+            <strong>Warning:</strong> You are about to permanently delete this poll and all associated data including:
+            <ul class="mb-0 mt-2">
+                <li>All votes cast in this poll</li>
+                <li>All comments on this poll</li>
+                <li>All reactions to this poll</li>
+                <li>All poll statistics and analytics</li>
+            </ul>
+        </div>
+
+        <div class="poll-details">
+            <div class="poll-title">{{ poll.title }}</div>
+            
+            {% if poll.description %}
+                <p class="text-muted">{{ poll.description|truncatewords:30 }}</p>
+            {% endif %}
+            
+            <div class="poll-meta">
+                <div class="meta-item">
+                    <i class="fas fa-user meta-icon"></i>
+                    <span>Created by: {{ poll.creator.username if poll.creator else 'Unknown' }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-calendar meta-icon"></i>
+                    <span>Created: {{ poll.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-poll meta-icon"></i>
+                    <span>Status: {{ poll.get_status }}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-vote-yea meta-icon"></i>
+                    <span>Total votes: {{ poll.get_total_votes }}</span>
+                </div>
+                {% if poll.category %}
+                <div class="meta-item">
+                    <i class="fas fa-tag meta-icon"></i>
+                    <span>Category: {{ poll.category.name }}</span>
+                </div>
+                {% endif %}
+                {% if poll.tags %}
+                <div class="meta-item">
+                    <i class="fas fa-tags meta-icon"></i>
+                    <span>Tags: {{ poll.tags }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="action-buttons">
+                <button type="submit" class="btn-danger">
+                    <i class="fas fa-trash"></i> Delete Poll Permanently
+                </button>
+                <a href="{% url 'voting:manage_polls' %}" class="btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+$kind: collection
+order: 2000
+description: |-
+  Step 2 — Authentication. Run these requests in order to set up a session before
+  testing any protected endpoints.
+
+  Recommended sequence:
+    1. Register (GET)  — confirm the registration form loads
+    2. Register (POST) — create a new test account (skip if account already exists)
+    3. Login (GET)     — load the login page and capture the csrftoken cookie
+    4. Login (POST)    — submit credentials; captures sessionid for downstream requests
+    5. Password Reset flow (GET/POST) — optional; tests the reset email workflow
+    6. Logout          — run last to end the session (re-login before further tests)
+
+  After a successful Login (POST) Postman stores the sessionid cookie automatically.
+  No manual token handling is required.

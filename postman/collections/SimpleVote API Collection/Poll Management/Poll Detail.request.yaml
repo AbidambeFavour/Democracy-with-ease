@@ -1,0 +1,36 @@
+$kind: http-request
+name: Poll Detail (GET)
+description: View a single poll including its choices, comments, reactions, and results (depending on poll visibility settings). Replace `{{pk}}` with the poll's numeric ID.
+url: '{{baseUrl}}/voting/poll/{{pk}}/'
+method: GET
+pathVariables:
+  - key: pk
+    value: '{{pk}}'
+    description: Primary key (numeric ID) of the poll (set via environment variable)
+order: 2000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      // Existing poll: renders detail page (200)
+      // Non-existent poll: 404
+      pm.test("Poll detail returns 200 or 404", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 404]);
+      });
+
+      pm.test("Response time is acceptable", function () {
+          pm.expect(pm.response.responseTime).to.be.below(5000);
+      });
+
+      if (pm.response.code === 200) {
+          pm.test("Response is HTML", function () {
+              pm.expect(pm.response.headers.get("Content-Type")).to.include("text/html");
+          });
+
+          pm.test("Poll detail page contains poll content", function () {
+              const body = pm.response.text();
+              pm.expect(body.toLowerCase()).to.satisfy(function (b) {
+                  return b.includes("poll") || b.includes("vote") || b.includes("choice");
+              });
+          });
+      }

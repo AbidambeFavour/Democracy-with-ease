@@ -1,0 +1,14 @@
+$kind: collection
+order: 3000
+description: |-
+  Step 3 — User Account & Profile. Verify authenticated user flows after logging in.
+  All requests except the landing pages require an active session (complete Step 2 first).
+
+  Recommended sequence:
+    1. Accounts Landing        — unauthenticated landing page (no session needed)
+    2. Accounts Landing (explicit route) — alias URL smoke test
+    3. User Dashboard          — authenticated dashboard (requires login)
+    4. Edit Profile (GET)      — load the profile edit form
+    5. Edit Profile (POST)     — submit profile changes
+    6. View User Profile       — view any user's public profile by username
+    7. Toggle Online Status    — AJAX endpoint to update last-seen timestamp

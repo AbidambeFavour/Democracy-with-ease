@@ -1,0 +1,30 @@
+$kind: http-request
+name: Login (GET)
+description: Load the login page to confirm it renders correctly before submitting credentials.
+url: '{{baseUrl}}/accounts/login/'
+method: GET
+order: 3000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Login page loads successfully (200)", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Response is HTML", function () {
+          pm.expect(pm.response.headers.get("Content-Type")).to.include("text/html");
+      });
+
+      pm.test("Login form fields are present", function () {
+          const body = pm.response.text();
+          pm.expect(body).to.include("form");
+          pm.expect(body).to.include("username");
+          pm.expect(body).to.include("password");
+      });
+
+      // Capture csrftoken cookie for use in POST requests
+      const csrfCookie = pm.cookies.get("csrftoken");
+      if (csrfCookie) {
+          pm.collectionVariables.set("csrftoken", csrfCookie);
+      }
