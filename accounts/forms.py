@@ -57,8 +57,8 @@ class CustomUserCreationForm(UserCreationForm):
         user.email = self.cleaned_data['email']
         if commit:
             user.save()
-            # Create user profile
-            UserProfile.objects.create(user=user)
+            # Create user profile if it doesn't exist
+            UserProfile.objects.get_or_create(user=user)
         return user
 
 
@@ -94,6 +94,7 @@ class UserUpdateForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     bio = forms.CharField(
+        required=False,
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'rows': 4
@@ -131,6 +132,15 @@ class UserUpdateForm(forms.ModelForm):
 
 class UserProfileForm(forms.ModelForm):
     """Form for updating user preferences."""
+    language = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    timezone = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = UserProfile
         fields = ('email_notifications', 'push_notifications', 'public_profile',

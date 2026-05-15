@@ -136,7 +136,6 @@ class Vote(models.Model):
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 
     class Meta:
-        unique_together = ['poll', 'voter']  # One vote per poll per user
         ordering = ['-voted_at']
 
     def __str__(self):
@@ -179,3 +178,32 @@ class PollReaction(models.Model):
 
     def __str__(self):
         return f"{self.user.username} {self.reaction_type} {self.poll.title}"
+
+
+class UserNotification(models.Model):
+    """Notifications for users about poll events."""
+    NOTIFICATION_TYPES = [
+        ('voting_alarm', 'Voting Alarm'),
+        ('ending_reminder', 'Ending Reminder'),
+        ('poll_created', 'New Poll'),
+        ('poll_closed', 'Poll Closed'),
+        ('vote_received', 'Vote Received'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='notifications', null=True, blank=True)
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_read', 'created_at']),
+            models.Index(fields=['notification_type', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.title}"

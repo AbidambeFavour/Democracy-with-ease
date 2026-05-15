@@ -45,6 +45,9 @@ urlpatterns = [
          ), 
          name='password_reset_complete'),
     
+    # User voting features
+    path('my-votes/', views.my_votes_view, name='my_votes'),
+    
     # AJAX endpoints
     path('toggle-online/', views.toggle_online_status, name='toggle_online'),
 ]

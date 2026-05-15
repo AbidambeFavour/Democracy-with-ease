@@ -30,9 +30,9 @@ class PollListView(ListView):
         ).order_by('-created_at')
         
         # Filter by category
-        category_slug = self.request.GET.get('category')
-        if category_slug:
-            queryset = queryset.filter(category__slug=category_slug)
+        category_id = self.request.GET.get('category')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
         
         # Search functionality
         search_query = self.request.GET.get('search')
@@ -115,12 +115,16 @@ class PollDetailView(DetailView):
             results = None
         
         # Get reactions count
-        reactions_count = {}
-        for reaction_type, _ in PollReaction.REACTION_TYPES:
-            reactions_count[reaction_type] = PollReaction.objects.filter(
-                poll=poll, 
-                reaction_type=reaction_type
-            ).count()
+        reaction_summary = []
+        for reaction_type, reaction_label in PollReaction.REACTION_TYPES:
+            reaction_summary.append({
+                'type': reaction_type,
+                'label': reaction_label,
+                'count': PollReaction.objects.filter(
+                    poll=poll,
+                    reaction_type=reaction_type
+                ).count(),
+            })
         
         context.update({
             'can_vote': can_vote,
@@ -129,7 +133,7 @@ class PollDetailView(DetailView):
             'results': results,
             'show_results': show_results,
             'user_reaction': user_reaction,
-            'reactions_count': reactions_count,
+            'reaction_summary': reaction_summary,
             'comments': poll.comments.select_related('author').all(),
         })
         
@@ -186,8 +190,15 @@ class PollDetailView(DetailView):
 
 
 class CreatePollView(LoginRequiredMixin, View):
-    """View to create a new poll."""
+    """View to create a new poll - Admin only."""
     template_name = 'voting/create_poll.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        """Only allow admin users to create polls."""
+        if not request.user.is_staff:
+            messages.error(request, "Only administrators can create polls.")
+            return redirect('voting:poll_list')
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request):
         """Display the poll creation form."""
@@ -208,7 +219,11 @@ class CreatePollView(LoginRequiredMixin, View):
         # Advanced options
         is_public = request.POST.get('is_public') == 'on'
         allow_multiple_votes = request.POST.get('allow_multiple_votes') == 'on'
-        max_votes_per_user = int(request.POST.get('max_votes_per_user', 1))
+        try:
+            max_votes_per_user = int(request.POST.get('max_votes_per_user', 1) or 1)
+        except ValueError:
+            messages.error(request, "Maximum votes per user must be a number.")
+            return self.get(request)
         show_results_immediately = request.POST.get('show_results_immediately') == 'on'
         
         # Get choices
