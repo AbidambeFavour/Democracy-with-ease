@@ -150,7 +150,7 @@ def dashboard_view(request):
             is_public=True,
             start_date__lte=timezone.now(),
             end_date__gte=timezone.now()
-        ).exclude(id__in=voted_polls).select_related('creator', 'category')[:5]
+        ).exclude(id__in=voted_poll_ids).select_related('creator', 'category')[:5]
         
         context.update({
             'available_polls': available_polls,
@@ -327,7 +327,7 @@ def my_votes_view(request):
         is_public=True,
         start_date__lte=timezone.now(),
         end_date__gte=timezone.now()
-    ).exclude(id__in=voted_polls).select_related('creator', 'category')[:5]
+    ).exclude(id__in=voted_poll_ids).select_related('creator', 'category')[:5]
     
     # Voting activity by category
     from django.db.models import Count
@@ -338,7 +338,7 @@ def my_votes_view(request):
     ).order_by('-vote_count')
     
     # Monthly voting trend
-    from django.db.models import TruncMonth
+    from django.db.models.functions import TruncMonth
     monthly_stats = votes.annotate(
         month=TruncMonth('voted_at')
     ).values('month').annotate(
