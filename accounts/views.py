@@ -9,12 +9,128 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.forms import SetPasswordForm
+from django.core.mail import send_mail
+from django.core.mail import BadHeaderError
 
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserUpdateForm, UserProfileForm
 from .models import UserProfile, UserActivity
 from voting.models import Poll, Vote
 
 User = get_user_model()
+
+
+# ---------------------------------------------------------------------------
+# Password reset — self-contained to avoid get_current_site() on Render.
+# ---------------------------------------------------------------------------
+
+def _site_domain():
+    """Return the current site domain without touching get_current_site()."""
+    # Prefer the first ALLOWED_HOSTS entry (render.yaml delivers exactly one).
+    hosts = settings.ALLOWED_HOSTS
+    if hosts and hosts != ['*']:
+        return hosts[0]
+    return 'localhost'
+
+
+def _infer_scheme(request):
+    """Return 'https' when behind a secure proxy, else 'http'."""
+    if request and request.is_secure():
+        return 'https'
+    return 'http'
+
+
+def password_reset_view(request):
+    """Display password reset form and send the reset email."""
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        if email:
+            users = User.objects.filter(email__iexact=email, is_active=True)
+            if users.exists():
+                for user in users:
+                    uid = urlsafe_base64_encode(force_str(user.pk).encode())
+                    token = default_token_generator.make_token(user)
+                    protocol = _infer_scheme(request)
+                    domain = _site_domain()
+                    reset_url = f'{protocol}://{domain}{reverse_lazy("accounts:password_reset_confirm", kwargs={"uidb64": uid, "token": token})}'
+                    subject = f'Password reset on {domain}'
+                    body = (
+                        f'Hello,\n\n'
+                        f"You're receiving this email because a password reset was requested for your SimpleVote account.\n\n"
+                        f'Please open the link below to choose a new password:\n'
+                        f'{reset_url}\n\n'
+                        f'If you did not request this, you can safely ignore this email.\n\n'
+                        f'Thanks,\n'
+                        f'SimpleVote'
+                    )
+                    try:
+                        send_mail(
+                            subject,
+                            body,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [user.email],
+                            fail_silently=False,
+                        )
+                    except BadHeaderError:
+                        messages.error(request, 'Invalid email header found. Please try again.')
+                    except Exception:
+                        # Mail backend not ready — don't block the user.
+                        pass
+        messages.success(request, 'If an account exists with that email address, you will receive a password reset link shortly.')
+        return redirect('accounts:password_reset_done')
+    return render(request, 'accounts/password_reset.html')
+
+
+def password_reset_done_view(request):
+    """Can be reached immediately after initiating a reset."""
+    return render(request, 'accounts/password_reset_done.html')
+
+
+def password_reset_confirm_view(request, uidb64, token):
+    """Display the new-password form; validate the token first."""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid, is_active=True)
+    except (User.DoesNotExist, ValueError, TypeError, OverflowError):
+        user = None
+
+    valid_token = user and default_token_generator.check_token(user, token)
+
+    if request.method == 'POST':
+        if not valid_token or not user:
+            messages.error(request, 'The reset link is invalid or has expired.')
+            return redirect('accounts:password_reset')
+        new_password = request.POST.get('new_password1', '')
+        confirm_password = request.POST.get('new_password2', '')
+        if not new_password or len(new_password) < 8:
+            messages.error(request, 'Password must be at least 8 characters.')
+            return render(request, 'accounts/password_reset_confirm.html',
+                          {'valid_user': user, 'validlink': True,
+                           'form': SetPasswordForm(user=user)})
+        if new_password != confirm_password:
+            messages.error(request, 'The two password fields did not match.')
+            return render(request, 'accounts/password_reset_confirm.html',
+                          {'valid_user': user, 'validlink': True,
+                           'form': SetPasswordForm(user=user)})
+        user.set_password(new_password)
+        user.save(update_fields=['password'])
+        messages.success(request, 'Your password has been changed successfully. You may now sign in.')
+        return redirect('accounts:login')
+
+    return render(
+        request,
+        'accounts/password_reset_confirm.html',
+        {'valid_user': user, 'validlink': valid_token,
+         'form': SetPasswordForm(user=user)},
+    )
+
+
+def password_reset_complete_view(request):
+    return render(request, 'accounts/password_reset_complete.html')
 
 
 def register_view(request):

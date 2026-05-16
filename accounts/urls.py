@@ -1,5 +1,4 @@
 from django.urls import path
-from django.contrib.auth import views as auth_views
 from . import views
 
 app_name = 'accounts'
@@ -22,28 +21,11 @@ urlpatterns = [
     path('profile/', views.ProfileUpdateView.as_view(), name='edit_profile'),
     path('profile/<str:username>/', views.ProfileView.as_view(), name='profile'),
     
-    # Password reset
-    path('password-reset/', 
-         auth_views.PasswordResetView.as_view(
-             template_name='accounts/password_reset.html',
-             email_template_name='accounts/password_reset_email.html'
-         ), 
-         name='password_reset'),
-    path('password-reset/done/', 
-         auth_views.PasswordResetDoneView.as_view(
-             template_name='accounts/password_reset_done.html'
-         ), 
-         name='password_reset_done'),
-    path('password-reset-confirm/<uidb64>/<token>/', 
-         auth_views.PasswordResetConfirmView.as_view(
-             template_name='accounts/password_reset_confirm.html'
-         ), 
-         name='password_reset_confirm'),
-    path('password-reset-complete/', 
-         auth_views.PasswordResetCompleteView.as_view(
-             template_name='accounts/password_reset_complete.html'
-         ), 
-         name='password_reset_complete'),
+    # Password reset (self-contained views — no get_current_site / sites framework call)
+    path('password-reset/', views.password_reset_view, name='password_reset'),
+    path('password-reset/done/', views.password_reset_done_view, name='password_reset_done'),
+    path('password-reset-confirm/<uidb64>/<token>/', views.password_reset_confirm_view, name='password_reset_confirm'),
+    path('password-reset-complete/', views.password_reset_complete_view, name='password_reset_complete'),
     
     # User voting features
     path('my-votes/', views.my_votes_view, name='my_votes'),

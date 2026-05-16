@@ -34,7 +34,7 @@ staticfiles/
 # Virtual environment
 venv/
 ENV/
-env/
+.env
 
 # IDE
 .idea/
@@ -59,3 +59,11 @@ desktop.ini
 
 # Migrations (optional - uncomment if you want to include migrations locally but not commit them)
 # voting/migrations/0*.py
+
+# Dev helpers (not part of the repo source)
+test_*.py
+check_*.py
+inspect_*.py
+reproduce_*.py
+testauth*.py
+testpw*.py
