@@ -14,11 +14,6 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse, unquote_plus
 
-try:
-    import dj_database_url  # type: ignore
-except ImportError:
-    dj_database_url = None  # type: ignore
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -47,9 +42,9 @@ def env_bool(name: str, default: bool = False) -> bool:
 
 
 def parse_database_url(url: str) -> dict | None:
-    """Parse a DATABASE_URL (RFC format) into a Django DATABASES dict.
-    Supports: postgres, postgresql, mysql, sqlite backends.
-    Falls back to None on any parse error."""
+    """Parse a DATABASE_URL (RFC format) into a Django DATABASES dict."""
+    from urllib.parse import urlparse, unquote_plus
+
     if not url:
         return None
     try:
