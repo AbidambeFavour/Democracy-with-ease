@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: democracy-with-ease
+    runtime: python-3.14
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn simplevote.wsgi:application
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: true
+      - key: DJANGO_SETTINGS_MODULE
+        value: simplevote.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
