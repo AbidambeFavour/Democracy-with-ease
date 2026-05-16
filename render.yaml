@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: democracy-with-ease
+    name: Django-voting-system
     runtime: python-3.14
     plan: free
     buildCommand: pip install -r requirements.txt
