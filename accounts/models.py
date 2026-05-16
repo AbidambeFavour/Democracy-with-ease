@@ -77,7 +77,9 @@ class UserActivity(models.Model):
         ('poll_ended', 'Poll Ended'),
         ('profile_updated', 'Profile Updated'),
         ('login', 'Login'),
-        ('logout', 'Logout')
+        ('logout', 'Logout'),
+        ('registration', 'Registration'),
+        ('admin_registration', 'Admin Registration'),
     ])
     description = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)

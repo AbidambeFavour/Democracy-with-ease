@@ -118,6 +118,9 @@ WSGI_APPLICATION = 'simplevote.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+USE_POSTGRES = env_bool('USE_POSTGRES', False)
+USE_SQLITE = env_bool('USE_SQLITE', False)
+
 _database_url = os.getenv('DATABASE_URL')
 
 if _database_url and dj_database_url:
