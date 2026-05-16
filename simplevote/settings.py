@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+try:
+    import dj_database_url  # type: ignore
+except ImportError:
+    dj_database_url = None  # type: ignore
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -112,9 +117,11 @@ WSGI_APPLICATION = 'simplevote.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-USE_POSTGRES = env_bool('USE_POSTGRES', False)
+_database_url = os.getenv('DATABASE_URL')
 
-if USE_POSTGRES:
+if _database_url and dj_database_url:
+    DATABASES = {'default': dj_database_url.parse(_database_url, conn_max_age=60)}
+elif USE_POSTGRES:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',

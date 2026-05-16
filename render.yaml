@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: Django-voting-system
+    name: democracy-with-ease
     runtime: python-3.14
     plan: free
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
     startCommand: gunicorn simplevote.wsgi:application
     envVars:
       - key: PYTHONUNBUFFERED
@@ -15,4 +15,4 @@ services:
       - key: DEBUG
         value: "False"
       - key: ALLOWED_HOSTS
-        value: ".onrender.com"
+        value: "democracy-with-ease.onrender.com"
