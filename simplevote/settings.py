@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse, unquote_plus
 
 try:
     import dj_database_url  # type: ignore
@@ -43,6 +44,36 @@ load_env_file(BASE_DIR / '.env')
 
 def env_bool(name: str, default: bool = False) -> bool:
     return os.getenv(name, str(default)).strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+def parse_database_url(url: str) -> dict | None:
+    """Parse a DATABASE_URL (RFC format) into a Django DATABASES dict.
+    Supports: postgres, postgresql, mysql, sqlite backends.
+    Falls back to None on any parse error."""
+    if not url:
+        return None
+    try:
+        parsed = urlparse(url)
+        scheme = parsed.scheme.split('+')[-1]          # handles postgres+psycopg2
+        engine_map = {
+            'postgres': 'django.db.backends.postgresql',
+            'postgresql': 'django.db.backends.postgresql',
+            'mysql': 'django.db.backends.mysql',
+            'sqlite': 'django.db.backends.sqlite3',
+        }
+        engine = engine_map.get(scheme)
+        if not engine:
+            return None
+        return {
+            'ENGINE': engine,
+            'NAME': unquote_plus(parsed.path.lstrip('/')) if parsed.path else '',
+            'USER': unquote_plus(parsed.username) if parsed.username else '',
+            'PASSWORD': unquote_plus(parsed.password) if parsed.password else '',
+            'HOST': parsed.hostname or '',
+            'PORT': str(parsed.port) if parsed.port else '',
+        }
+    except Exception:
+        return None
 
 
 # When behind a reverse proxy (Render/Cloudflare) use forwarded headers
@@ -119,12 +150,20 @@ WSGI_APPLICATION = 'simplevote.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 USE_POSTGRES = env_bool('USE_POSTGRES', False)
-USE_SQLITE = env_bool('USE_SQLITE', False)
 
 _database_url = os.getenv('DATABASE_URL')
 
-if _database_url and dj_database_url:
-    DATABASES = {'default': dj_database_url.parse(_database_url, conn_max_age=60)}
+if _database_url:
+    _parsed = parse_database_url(_database_url)
+    if _parsed:
+        DATABASES = {'default': _parsed}
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 elif USE_POSTGRES:
     DATABASES = {
         'default': {

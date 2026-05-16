@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
+from django.core.exceptions import MultipleObjectsReturned
 
 
 class EmailOrUsernameBackend(ModelBackend):
@@ -14,12 +15,12 @@ class EmailOrUsernameBackend(ModelBackend):
             return None
 
         try:
-            user = UserModel.objects.get(
+            user = UserModel.objects.filter(
                 Q(email__iexact=identifier) | Q(username__iexact=identifier)
-            )
-        except UserModel.DoesNotExist:
+            ).first()
+        except Exception:
             return None
 
-        if user.check_password(password) and self.user_can_authenticate(user):
+        if user and user.check_password(password) and self.user_can_authenticate(user):
             return user
         return None
