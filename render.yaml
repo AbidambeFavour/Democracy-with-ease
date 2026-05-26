@@ -4,7 +4,7 @@ services:
     runtime: python-3.14
     plan: free
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: python manage.py migrate --noinput && gunicorn simplevote.wsgi:application
+    startCommand: python manage.py migrate --noinput && python manage.py ensure_render_admin && gunicorn simplevote.wsgi:application
     envVars:
       - key: PYTHONUNBUFFERED
         value: true
