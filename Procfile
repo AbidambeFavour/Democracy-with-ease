@@ -1,1 +1,1 @@
-web: gunicorn simplevote.wsgi:application
+web: python manage.py migrate --noinput && gunicorn simplevote.wsgi:application
