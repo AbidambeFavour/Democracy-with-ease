@@ -229,10 +229,19 @@ def dashboard_view(request):
     # Get recent activities
     recent_activities = UserActivity.objects.filter(user=user).order_by('-timestamp')[:10]
     
+    # Get active polls count (available for voting) - needed for both staff and regular users
+    from voting.models import Poll
+    active_polls = Poll.objects.filter(
+        is_public=True,
+        start_date__lte=timezone.now(),
+        end_date__gte=timezone.now()
+    ).count()
+    
     context = {
         'recent_votes': recent_votes,
         'total_votes_cast': total_votes_cast,
         'recent_activities': recent_activities,
+        'active_polls': active_polls,
     }
     
     # Add admin-specific data if user is staff
@@ -242,7 +251,6 @@ def dashboard_view(request):
         ).order_by('-created_at')[:5]
         
         total_polls = Poll.objects.filter(creator=user).count()
-        active_polls = Poll.objects.filter(creator=user, end_date__gt=timezone.now()).count()
         
         # Get trending polls (excluding user's own polls)
         trending_polls = Poll.objects.annotate(
@@ -255,7 +263,6 @@ def dashboard_view(request):
         context.update({
             'polls_created': polls_created,
             'total_polls': total_polls,
-            'active_polls': active_polls,
             'trending_polls': trending_polls,
         })
     else:
@@ -270,7 +277,6 @@ def dashboard_view(request):
         
         context.update({
             'available_polls': available_polls,
-            'active_polls': available_polls.count(),
         })
     
     return render(request, 'accounts/dashboard.html', context)

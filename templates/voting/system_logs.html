@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}System Logs - SimpleVote{% endblock %}
+
+{% block extra_css %}
+<style>
+    .logs-section {
+        padding: 24px;
+    }
+    
+    .logs-filters {
+        display: grid;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .filter-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        display: grid;
+        gap: 8px;
+    }
+    
+    .logs-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .logs-table th,
+    .logs-table td {
+        padding: 14px 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+    }
+    
+    .logs-table th {
+        background: var(--primary-soft);
+        color: var(--heading);
+        font-weight: 600;
+    }
+    
+    .logs-table tr:hover {
+        background: var(--panel-hover);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+    <div class="page-header">
+        <h1><i class="fas fa-list"></i> System Logs</h1>
+        <p>View all user activity and system events.</p>
+    </div>
+    
+    <section class="logs-section">
+        <form method="get" class="logs-filters">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="activity_type">Activity Type</label>
+                    <select id="activity_type" name="type">
+                        <option value="">All Types</option>
+                        {% for value, label in activity_types %}
+                            <option value="{{ value }}" {% if activity_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="user_filter">User</label>
+                    <input type="text" id="user_filter" name="user" value="{{ user_filter }}" placeholder="Username search...">
+                </div>
+                
+                <div class="filter-group">
+                    <button type="submit" class="btn btn-primary" style="margin-top: auto;"><i class="fas fa-filter"></i> Filter</button>
+                </div>
+            </div>
+        </form>
+        
+        {% if activities %}
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Activity</th>
+                        <th>Description</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in activities %}
+                        <tr>
+                            <td>{{ activity.user.username }}</td>
+                            <td>{{ activity.get_activity_type_display }}</td>
+                            <td>{{ activity.description }}</td>
+                            <td>{{ activity.timestamp|timesince }} ago</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>No activity logs found</h3>
+                <p>No activity records match your filter criteria.</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

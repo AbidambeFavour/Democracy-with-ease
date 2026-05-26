@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.utils import timezone
+import datetime
 from django.db import IntegrityError
 from django.http import Http404
 from django.db.models import Count, Q
@@ -246,11 +247,11 @@ class CreatePollView(LoginRequiredMixin, View):
         
         # Parse datetime fields
         try:
-            start_datetime = timezone.datetime.strptime(
+            start_datetime = datetime.datetime.strptime(
                 f"{start_date} {start_time}", 
                 "%Y-%m-%d %H:%M"
             )
-            end_datetime = timezone.datetime.strptime(
+            end_datetime = datetime.datetime.strptime(
                 f"{end_date} {end_time}", 
                 "%Y-%m-%d %H:%M"
             )

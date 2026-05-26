@@ -187,23 +187,22 @@
         </div>
     </section>
 
-    {% if user.is_staff %}
     <section class="stats-grid">
+        {% if user.is_staff %}
         <article class="stat-card">
             <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
             <div class="stat-value">{{ total_polls|default:0 }}</div>
             <h3>Polls Created</h3>
             <p class="stat-change" style="color:var(--success-text);">Steady creation activity this cycle.</p>
         </article>
-{% else %}
-    <section class="stats-grid">
+        {% else %}
         <article class="stat-card">
             <div class="stat-icon"><i class="fas fa-vote-yea"></i></div>
             <div class="stat-value">{{ total_votes_cast|default:0 }}</div>
             <h3>Total Votes Cast</h3>
             <p class="stat-change" style="color:var(--info-text);">Active participation in polls.</p>
         </article>
-{% endif %}
+        {% endif %}
         <article class="stat-card">
             <div class="stat-icon"><i class="fas fa-check-to-slot"></i></div>
             <div class="stat-value">{{ total_votes_cast|default:0 }}</div>

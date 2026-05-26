@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Poll, Choice, Vote
+from .models import Poll, Choice, Vote, Category, PollComment, PollReaction
 
 
 class ChoiceInline(admin.TabularInline):
@@ -13,7 +13,7 @@ class VoteInline(admin.TabularInline):
     """Inline admin for votes in poll admin."""
     model = Vote
     extra = 0
-    readonly_fields = ('voter_identifier', 'voted_at')
+    readonly_fields = ('voter', 'voted_at')
     can_delete = False
 
 
@@ -114,3 +114,26 @@ class VoteAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         """Prevent editing of votes through admin."""
         return False
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    """Admin configuration for Category model."""
+    list_display = ['name', 'description', 'created_at']
+    search_fields = ['name', 'description']
+
+
+@admin.register(PollComment)
+class PollCommentAdmin(admin.ModelAdmin):
+    """Admin configuration for PollComment model."""
+    list_display = ['poll', 'author', 'created_at', 'is_edited']
+    list_filter = ['created_at', 'is_edited']
+    search_fields = ['poll__title', 'author__username', 'content']
+
+
+@admin.register(PollReaction)
+class PollReactionAdmin(admin.ModelAdmin):
+    """Admin configuration for PollReaction model."""
+    list_display = ['poll', 'user', 'reaction_type', 'created_at']
+    list_filter = ['reaction_type', 'created_at']
+    search_fields = ['poll__title', 'user__username']
