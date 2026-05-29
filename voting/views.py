@@ -31,6 +31,12 @@ class PollListView(ListView):
             vote_count=Count('vote')
         ).order_by('-created_at')
         
+        # Log queryset for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"PollListView.get_queryset - User: {self.request.user.username if self.request.user.is_authenticated else 'Anonymous'}")
+        logger.info(f"Total polls in database: {queryset.count()}")
+        
         # Filter by category
         category_id = self.request.GET.get('category')
         if category_id:
@@ -68,6 +74,9 @@ class PollListView(ListView):
             queryset = queryset.filter(
                 Q(is_public=True) | Q(creator=self.request.user)
             ).distinct()
+        
+        logger.info(f"Final queryset count: {queryset.count()}")
+        logger.info(f"Queryset polls: {[poll.title for poll in queryset[:5]]}")
         
         return queryset
 
@@ -296,6 +305,11 @@ class CreatePollView(LoginRequiredMixin, View):
                 max_votes_per_user=max_votes_per_user,
                 show_results_immediately=show_results_immediately
             )
+            # Log poll creation for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Poll created: ID={poll.id}, title={poll.title}, is_public={poll.is_public}, creator={poll.creator.username}")
+            logger.info(f"Poll times: start={poll.start_date}, end={poll.end_date}")
             
             # Create choices
             for choice_text in choice_texts:
