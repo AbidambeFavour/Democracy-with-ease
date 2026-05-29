@@ -64,9 +64,10 @@ class PollListView(ListView):
             queryset = queryset.filter(is_public=True)
         else:
             # Authenticated users see all public polls plus their own private polls
+            # Use OR to ensure all public polls are shown
             queryset = queryset.filter(
                 Q(is_public=True) | Q(creator=self.request.user)
-            )
+            ).distinct()
         
         return queryset
 
