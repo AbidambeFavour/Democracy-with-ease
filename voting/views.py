@@ -45,7 +45,7 @@ class PollListView(ListView):
                 Q(tags__icontains=search_query)
             )
         
-        # Filter by status - use consistent timezone-aware comparisons
+        # Filter by status - only apply if user explicitly filters
         status = self.request.GET.get('status')
         if status == 'active':
             queryset = queryset.filter(
@@ -56,6 +56,7 @@ class PollListView(ListView):
             queryset = queryset.filter(end_date__lt=now)
         elif status == 'upcoming':
             queryset = queryset.filter(start_date__gt=now)
+        # If no status filter is specified, show all polls (no time-based filtering)
         
         # Show all public polls to all authenticated users
         # Non-authenticated users only see public polls
@@ -226,6 +227,9 @@ class CreatePollView(LoginRequiredMixin, View):
         
         # Advanced options
         is_public = request.POST.get('is_public') == 'on'
+        # Default to public if not specified
+        if not is_public and 'is_public' not in request.POST:
+            is_public = True
         allow_multiple_votes = request.POST.get('allow_multiple_votes') == 'on'
         try:
             max_votes_per_user = int(request.POST.get('max_votes_per_user', 1) or 1)
@@ -262,9 +266,9 @@ class CreatePollView(LoginRequiredMixin, View):
                 f"{end_date} {end_time}", 
                 "%Y-%m-%d %H:%M"
             )
-            # Make timezone-aware using UTC to avoid timezone confusion
-            start_datetime = timezone.make_aware(start_datetime, timezone.utc)
-            end_datetime = timezone.make_aware(end_datetime, timezone.utc)
+            # Make timezone-aware using current timezone
+            start_datetime = timezone.make_aware(start_datetime)
+            end_datetime = timezone.make_aware(end_datetime)
         except (ValueError, TypeError):
             messages.error(request, "Invalid date or time format.")
             return self.get(request)
