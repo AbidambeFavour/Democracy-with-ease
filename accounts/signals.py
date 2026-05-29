@@ -19,8 +19,9 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=UserActivity)
 def email_user_activity(sender, instance, created, **kwargs):
-    if created:
-        transaction.on_commit(lambda: _send_activity_email_safely(instance))
+    # Temporarily disabled to prevent SMTP connection failures from breaking login
+    # Re-enable once SMTP is properly configured and tested
+    return
 
 
 def _send_activity_email_safely(activity):
