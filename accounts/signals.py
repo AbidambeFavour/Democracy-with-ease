@@ -1,9 +1,12 @@
 from django.db.models.signals import post_save
 from django.db import transaction
 from django.dispatch import receiver
+import logging
 
 from .email_utils import send_activity_email
 from .models import User, UserActivity, UserProfile
+
+logger = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender=User)
@@ -17,4 +20,11 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=UserActivity)
 def email_user_activity(sender, instance, created, **kwargs):
     if created:
-        transaction.on_commit(lambda: send_activity_email(instance))
+        transaction.on_commit(lambda: _send_activity_email_safely(instance))
+
+
+def _send_activity_email_safely(activity):
+    try:
+        send_activity_email(activity)
+    except Exception:
+        logger.exception('Activity email failed for activity %s', activity.pk)
