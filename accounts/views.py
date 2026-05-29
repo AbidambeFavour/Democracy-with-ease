@@ -187,14 +187,25 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            user.last_seen = timezone.now()
-            user.save(update_fields=['last_seen'])
+            
+            # Update last_seen with error handling
+            try:
+                user.last_seen = timezone.now()
+                user.save(update_fields=['last_seen'])
+            except Exception:
+                # Don't let last_seen update failure break login
+                pass
 
-            UserActivity.objects.create(
-                user=user,
-                activity_type='login',
-                description='User logged in'
-            )
+            # Create UserActivity with error handling
+            try:
+                UserActivity.objects.create(
+                    user=user,
+                    activity_type='login',
+                    description='User logged in'
+                )
+            except Exception:
+                # Don't let activity logging failure break login
+                pass
 
             messages.info(request, f'You are now logged in as {user.username}.')
             return redirect('accounts:dashboard')
