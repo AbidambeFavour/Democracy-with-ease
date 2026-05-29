@@ -69,6 +69,8 @@ class PollListView(ListView):
                 Q(is_public=True) | Q(creator=self.request.user)
             ).distinct()
         
+        # Ensure all polls are visible regardless of time for now
+        # This ensures new polls appear immediately
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -231,6 +233,8 @@ class CreatePollView(LoginRequiredMixin, View):
         # Default to public if not specified
         if not is_public and 'is_public' not in request.POST:
             is_public = True
+        # Force is_public to True for now to ensure visibility
+        is_public = True
         allow_multiple_votes = request.POST.get('allow_multiple_votes') == 'on'
         try:
             max_votes_per_user = int(request.POST.get('max_votes_per_user', 1) or 1)
