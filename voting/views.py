@@ -26,7 +26,7 @@ class PollListView(ListView):
 
     def get_queryset(self):
         """Return polls with filtering and search capabilities."""
-        now = timezone.now()
+        # Get ALL polls first - no filtering
         queryset = Poll.objects.select_related('creator', 'category').annotate(
             vote_count=Count('vote')
         ).order_by('-created_at')
@@ -37,12 +37,20 @@ class PollListView(ListView):
         logger.info(f"PollListView.get_queryset - User: {self.request.user.username if self.request.user.is_authenticated else 'Anonymous'}")
         logger.info(f"Total polls in database: {queryset.count()}")
         
-        # Filter by category
+        # Show ALL polls to authenticated users regardless of status
+        # This ensures users can see all polls
+        if self.request.user.is_authenticated:
+            # Show all polls - no filtering
+            pass
+        else:
+            # Non-authenticated users only see public polls
+            queryset = queryset.filter(is_public=True)
+        
+        # Apply optional filters only if explicitly requested
         category_id = self.request.GET.get('category')
         if category_id:
             queryset = queryset.filter(category_id=category_id)
         
-        # Search functionality
         search_query = self.request.GET.get('search')
         if search_query:
             queryset = queryset.filter(
@@ -50,30 +58,6 @@ class PollListView(ListView):
                 Q(description__icontains=search_query) |
                 Q(tags__icontains=search_query)
             )
-        
-        # Filter by status - only apply if user explicitly filters
-        status = self.request.GET.get('status')
-        if status == 'active':
-            queryset = queryset.filter(
-                start_date__lte=now,
-                end_date__gte=now
-            )
-        elif status == 'closed':
-            queryset = queryset.filter(end_date__lt=now)
-        elif status == 'upcoming':
-            queryset = queryset.filter(start_date__gt=now)
-        # If no status filter is specified, show all polls (no time-based filtering)
-        
-        # Show all public polls to all authenticated users
-        # Non-authenticated users only see public polls
-        if not self.request.user.is_authenticated:
-            queryset = queryset.filter(is_public=True)
-        else:
-            # Authenticated users see all public polls plus their own private polls
-            # Use OR to ensure all public polls are shown
-            queryset = queryset.filter(
-                Q(is_public=True) | Q(creator=self.request.user)
-            ).distinct()
         
         logger.info(f"Final queryset count: {queryset.count()}")
         logger.info(f"Queryset polls: {[poll.title for poll in queryset[:5]]}")
