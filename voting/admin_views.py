@@ -147,6 +147,25 @@ def manage_users(request):
 
 @login_required
 @user_passes_test(is_super_admin)
+def delete_user(request, user_id):
+    """Delete a user (super admin only)."""
+    user = get_object_or_404(User, id=user_id)
+    
+    if user == request.user:
+        messages.error(request, "You cannot delete your own account.")
+        return redirect('voting:manage_users')
+    
+    if request.method == 'POST':
+        username = user.username
+        user.delete()
+        messages.success(request, f"User '{username}' has been deleted.")
+        return redirect('voting:manage_users')
+    
+    return render(request, 'voting/delete_user.html', {'user': user})
+
+
+@login_required
+@user_passes_test(is_super_admin)
 def toggle_user_status(request, user_id):
     """Toggle user admin status (super admin only)."""
     user = get_object_or_404(User, id=user_id)

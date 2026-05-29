@@ -17,6 +17,7 @@ urlpatterns = [
     path('admin/manage-polls/', admin_views.manage_polls, name='manage_polls'),
     path('admin/delete-poll/<int:poll_id>/', admin_views.delete_poll, name='delete_poll'),
     path('admin/manage-users/', admin_views.manage_users, name='manage_users'),
+    path('admin/delete-user/<int:user_id>/', admin_views.delete_user, name='delete_user'),
     path('admin/toggle-user/<int:user_id>/', admin_views.toggle_user_status, name='toggle_user_status'),
     path('admin/password-reset-user/<int:user_id>/', admin_views.send_user_password_reset, name='send_user_password_reset'),
     path('admin/settings/', admin_views.system_settings, name='system_settings'),
