@@ -69,7 +69,7 @@ def send_password_reset_email(user, request=None, initiated_by=None):
 def send_activity_email(activity):
     """Email a user about an activity recorded on their account."""
     user = activity.user
-    if not getattr(settings, 'ACTIVITY_EMAIL_NOTIFICATIONS', True):
+    if not getattr(settings, 'ACTIVITY_EMAIL_NOTIFICATIONS', False):
         return False
     if not user.email:
         return False
@@ -89,11 +89,15 @@ def send_activity_email(activity):
         f'Thanks,\n'
         f'SimpleVote'
     )
-    send_mail(
-        subject,
-        body,
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        fail_silently=True,
-    )
+    try:
+        send_mail(
+            subject,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=True,
+        )
+    except Exception:
+        # Email sending failed - don't break the application
+        pass
     return True
