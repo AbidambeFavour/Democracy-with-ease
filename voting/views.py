@@ -26,6 +26,7 @@ class PollListView(ListView):
 
     def get_queryset(self):
         """Return polls with filtering and search capabilities."""
+        now = timezone.now()
         queryset = Poll.objects.select_related('creator', 'category').annotate(
             vote_count=Count('vote')
         ).order_by('-created_at')
@@ -44,21 +45,27 @@ class PollListView(ListView):
                 Q(tags__icontains=search_query)
             )
         
-        # Filter by status
+        # Filter by status - use consistent timezone-aware comparisons
         status = self.request.GET.get('status')
         if status == 'active':
             queryset = queryset.filter(
-                start_date__lte=timezone.now(),
-                end_date__gte=timezone.now()
+                start_date__lte=now,
+                end_date__gte=now
             )
         elif status == 'closed':
-            queryset = queryset.filter(end_date__lt=timezone.now())
+            queryset = queryset.filter(end_date__lt=now)
         elif status == 'upcoming':
-            queryset = queryset.filter(start_date__gt=timezone.now())
+            queryset = queryset.filter(start_date__gt=now)
         
         # Only show public polls for non-authenticated users
+        # For authenticated users, show all polls (both public and private if they have access)
         if not self.request.user.is_authenticated:
             queryset = queryset.filter(is_public=True)
+        else:
+            # For authenticated users, show public polls and their own private polls
+            queryset = queryset.filter(
+                Q(is_public=True) | Q(creator=self.request.user)
+            )
         
         return queryset
 

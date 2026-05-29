@@ -58,9 +58,10 @@ class Poll(models.Model):
 
     def get_status(self):
         """Get the status of the poll."""
-        if not self.has_started():
+        now = timezone.now()
+        if now < self.start_date:
             return "Upcoming"
-        elif self.is_active():
+        elif self.start_date <= now <= self.end_date:
             return "Active"
         else:
             return "Closed"

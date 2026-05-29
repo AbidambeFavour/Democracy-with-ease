@@ -21,6 +21,8 @@ urlpatterns = [
     path('admin/password-reset-user/<int:user_id>/', admin_views.send_user_password_reset, name='send_user_password_reset'),
     path('admin/settings/', admin_views.system_settings, name='system_settings'),
     path('admin/logs/', admin_views.system_logs, name='system_logs'),
+    path('admin/categories/', admin_views.manage_categories, name='manage_categories'),
+    path('admin/categories/delete/<int:category_id>/', admin_views.delete_category, name='delete_category'),
     
     # API URLs for notifications
     path('api/notifications/', api_views.get_notifications, name='get_notifications'),

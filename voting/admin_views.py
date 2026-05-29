@@ -233,3 +233,50 @@ def system_logs(request):
     }
     
     return render(request, 'voting/system_logs.html', context)
+
+
+@login_required
+@user_passes_test(is_super_admin)
+def manage_categories(request):
+    """Manage poll categories."""
+    categories = Category.objects.all().order_by('name')
+    
+    if request.method == 'POST':
+        # Create new category
+        name = request.POST.get('name')
+        description = request.POST.get('description', '')
+        color = request.POST.get('color', '#007bff')
+        
+        if name:
+            try:
+                Category.objects.create(
+                    name=name,
+                    description=description,
+                    color=color
+                )
+                messages.success(request, f"Category '{name}' created successfully!")
+            except Exception:
+                messages.error(request, "Category with this name already exists.")
+        else:
+            messages.error(request, "Category name is required.")
+    
+    context = {
+        'categories': categories,
+    }
+    
+    return render(request, 'voting/manage_categories.html', context)
+
+
+@login_required
+@user_passes_test(is_super_admin)
+def delete_category(request, category_id):
+    """Delete a category."""
+    category = get_object_or_404(Category, id=category_id)
+    
+    if request.method == 'POST':
+        category_name = category.name
+        category.delete()
+        messages.success(request, f"Category '{category_name}' has been deleted.")
+        return redirect('voting:manage_categories')
+    
+    return render(request, 'voting/delete_category.html', {'category': category})
