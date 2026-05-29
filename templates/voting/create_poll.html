@@ -360,7 +360,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('createPollForm');
 
     const now = new Date();
-    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    // Set start time to current time rounded to next hour
+    const startTime = new Date(now);
+    startTime.setMinutes(0, 0, 0);
+    if (startTime <= now) {
+        startTime.setHours(startTime.getHours() + 1);
+    }
+    
+    // Set end time to 24 hours from start time
+    const endTime = new Date(startTime.getTime() + 24 * 60 * 60 * 1000);
 
     function formatDate(date) {
         return date.toISOString().split('T')[0];
@@ -370,10 +378,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return date.toTimeString().slice(0, 5);
     }
 
-    document.getElementById('start_date').value = formatDate(now);
-    document.getElementById('start_time').value = formatTime(now);
-    document.getElementById('end_date').value = formatDate(tomorrow);
-    document.getElementById('end_time').value = formatTime(tomorrow);
+    document.getElementById('start_date').value = formatDate(startTime);
+    document.getElementById('start_time').value = formatTime(startTime);
+    document.getElementById('end_date').value = formatDate(endTime);
+    document.getElementById('end_time').value = formatTime(endTime);
 
     addChoiceBtn.addEventListener('click', function() {
         choiceCount += 1;

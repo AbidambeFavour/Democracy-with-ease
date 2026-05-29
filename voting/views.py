@@ -57,12 +57,12 @@ class PollListView(ListView):
         elif status == 'upcoming':
             queryset = queryset.filter(start_date__gt=now)
         
-        # Only show public polls for non-authenticated users
-        # For authenticated users, show all polls (both public and private if they have access)
+        # Show all public polls to all authenticated users
+        # Non-authenticated users only see public polls
         if not self.request.user.is_authenticated:
             queryset = queryset.filter(is_public=True)
         else:
-            # For authenticated users, show public polls and their own private polls
+            # Authenticated users see all public polls plus their own private polls
             queryset = queryset.filter(
                 Q(is_public=True) | Q(creator=self.request.user)
             )
@@ -262,9 +262,9 @@ class CreatePollView(LoginRequiredMixin, View):
                 f"{end_date} {end_time}", 
                 "%Y-%m-%d %H:%M"
             )
-            # Make timezone-aware
-            start_datetime = timezone.make_aware(start_datetime)
-            end_datetime = timezone.make_aware(end_datetime)
+            # Make timezone-aware using UTC to avoid timezone confusion
+            start_datetime = timezone.make_aware(start_datetime, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime, timezone.utc)
         except (ValueError, TypeError):
             messages.error(request, "Invalid date or time format.")
             return self.get(request)
