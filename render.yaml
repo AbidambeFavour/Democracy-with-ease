@@ -15,6 +15,14 @@ services:
       - key: DEBUG
         value: "False"
       - key: ALLOWED_HOSTS
-        value: "democracy-with-ease.onrender.com"
+        value: "democracy-with-ease.onrender.com,simplevote.it.com,www.simplevote.it.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://democracy-with-ease.onrender.com,https://simplevote.it.com,https://www.simplevote.it.com"
+      - key: SITE_DOMAIN
+        value: "simplevote.it.com"
+      - key: SITE_SCHEME
+        value: "https"
+      - key: ACTIVITY_EMAIL_NOTIFICATIONS
+        value: "True"
       - key: DATABASE_URL
         sync: false

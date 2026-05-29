@@ -13,11 +13,11 @@ from django.conf import settings
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.forms import SetPasswordForm
-from django.core.mail import send_mail
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.core.mail import BadHeaderError
 
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserUpdateForm, UserProfileForm
+from .email_utils import send_password_reset_email
 from .models import UserProfile, UserActivity
 from voting.models import Poll, Vote
 
@@ -28,23 +28,8 @@ User = get_user_model()
 # Password reset — self-contained to avoid get_current_site() on Render.
 # ---------------------------------------------------------------------------
 
-def _site_domain():
-    """Return the current site domain without touching get_current_site()."""
-    # Prefer the first ALLOWED_HOSTS entry (render.yaml delivers exactly one).
-    hosts = settings.ALLOWED_HOSTS
-    if hosts and hosts != ['*']:
-        return hosts[0]
-    return 'localhost'
-
-
-def _infer_scheme(request):
-    """Return 'https' when behind a secure proxy, else 'http'."""
-    if request and request.is_secure():
-        return 'https'
-    return 'http'
-
-
-def password_reset_view(request):
+def _legacy_password_reset_view(request):
+    return password_reset_view(request)
     """Display password reset form and send the reset email."""
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
@@ -83,6 +68,26 @@ def password_reset_view(request):
         messages.success(request, 'If an account exists with that email address, you will receive a password reset link shortly.')
         return redirect('accounts:password_reset_done')
     return render(request, 'accounts/password_reset.html')
+
+
+def password_reset_view(request):
+    """Display password reset form and send the reset email."""
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email'].strip()
+            users = User.objects.filter(email__iexact=email, is_active=True)
+            for user in users:
+                try:
+                    send_password_reset_email(user, request=request)
+                except BadHeaderError:
+                    messages.error(request, 'Invalid email header found. Please try again.')
+                except Exception:
+                    # Mail backend not ready; do not leak account existence.
+                    pass
+        messages.success(request, 'If an account exists with that email address, you will receive a password reset link shortly.')
+        return redirect('accounts:password_reset_done')
+    return render(request, 'accounts/password_reset.html', {'form': PasswordResetForm()})
 
 
 def password_reset_done_view(request):

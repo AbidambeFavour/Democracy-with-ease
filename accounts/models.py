@@ -80,6 +80,7 @@ class UserActivity(models.Model):
         ('logout', 'Logout'),
         ('registration', 'Registration'),
         ('admin_registration', 'Admin Registration'),
+        ('password_reset_sent', 'Password Reset Sent'),
     ])
     description = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)

@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 
 from .models import Poll, Choice, Vote, Category, PollComment, PollReaction
+from accounts.email_utils import send_password_reset_email
 from accounts.models import UserActivity, UserProfile
 
 User = get_user_model()
@@ -135,6 +136,10 @@ def manage_users(request):
     context = {
         'users': users,
         'user_type': user_type,
+        'total_users': User.objects.count(),
+        'regular_users': User.objects.filter(is_staff=False).count(),
+        'admin_users': User.objects.filter(is_staff=True).count(),
+        'verified_users': User.objects.filter(is_verified=True).count(),
     }
     
     return render(request, 'voting/manage_users.html', context)
@@ -160,6 +165,27 @@ def toggle_user_status(request, user_id):
             messages.success(request, f"{user.username} is no longer an administrator.")
         user.save()
     
+    return redirect('voting:manage_users')
+
+
+@login_required
+@user_passes_test(is_super_admin)
+def send_user_password_reset(request, user_id):
+    """Send a password reset email for a user from super admin tools."""
+    user = get_object_or_404(User, id=user_id, is_active=True)
+
+    if request.method == 'POST':
+        try:
+            send_password_reset_email(user, request=request, initiated_by=request.user)
+            UserActivity.objects.create(
+                user=user,
+                activity_type='password_reset_sent',
+                description=f'Password reset email sent by {request.user.username}'
+            )
+            messages.success(request, f'Password reset email sent to {user.email}.')
+        except Exception:
+            messages.error(request, f'Could not send password reset email to {user.email}. Check email settings.')
+
     return redirect('voting:manage_users')
 
 

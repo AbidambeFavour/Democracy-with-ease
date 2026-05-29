@@ -141,7 +141,7 @@
             <div class="poll-meta">
                 <div class="meta-item">
                     <i class="fas fa-user meta-icon"></i>
-                    <span>Created by: {{ poll.creator.username if poll.creator else 'Unknown' }}</span>
+                    <span>Created by: {% if poll.creator %}{{ poll.creator.username }}{% else %}Unknown{% endif %}</span>
                 </div>
                 <div class="meta-item">
                     <i class="fas fa-calendar meta-icon"></i>

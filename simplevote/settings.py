@@ -88,11 +88,20 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here-chang
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool('DEBUG', False)
+SITE_DOMAIN = os.getenv('SITE_DOMAIN', '')
+SITE_SCHEME = os.getenv('SITE_SCHEME', 'https')
 
 _allow_hosts_env = os.getenv('ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = [h.strip() for h in _allow_hosts_env.split(',') if h.strip()] if _allow_hosts_env else (
     ['*'] if os.getenv('RENDER') else ['localhost', '127.0.0.1', 'testserver']
 )
+
+_csrf_trusted_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in _csrf_trusted_origins_env.split(',')
+    if origin.strip()
+]
 
 
 # Application definition
@@ -231,7 +240,14 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587') or 587)
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', True)
+EMAIL_USE_SSL = env_bool('EMAIL_USE_SSL', False)
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@simplevote.local')
+ACTIVITY_EMAIL_NOTIFICATIONS = env_bool('ACTIVITY_EMAIL_NOTIFICATIONS', True)
 
 # Media files
 MEDIA_URL = '/media/'

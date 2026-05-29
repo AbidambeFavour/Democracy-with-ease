@@ -225,8 +225,8 @@
                     <div class="activity-content">
                         <div class="activity-user">{{ poll.title }}</div>
                         <div class="activity-description">
-                            by {{ poll.creator.username if poll.creator else 'Unknown' }} 
-                            · {{ poll.get_status }}
+                            by {% if poll.creator %}{{ poll.creator.username }}{% else %}Unknown{% endif %}
+                            &middot; {{ poll.get_status }}
                         </div>
                         <div class="activity-time">{{ poll.created_at|timesince }} ago</div>
                     </div>
