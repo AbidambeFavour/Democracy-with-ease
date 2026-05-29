@@ -69,8 +69,6 @@ class PollListView(ListView):
                 Q(is_public=True) | Q(creator=self.request.user)
             ).distinct()
         
-        # Ensure all polls are visible regardless of time for now
-        # This ensures new polls appear immediately
         return queryset
 
     def get_context_data(self, **kwargs):
