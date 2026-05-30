@@ -27,9 +27,7 @@ class PollListView(ListView):
     def get_queryset(self):
         """Return polls with filtering and search capabilities."""
         # Get ALL polls first - no filtering
-        queryset = Poll.objects.select_related('creator', 'category').annotate(
-            vote_count=Count('vote')
-        ).order_by('-created_at')
+        queryset = Poll.objects.all().order_by('-created_at')
         
         # Log queryset for debugging
         import logging
@@ -37,27 +35,9 @@ class PollListView(ListView):
         logger.info(f"PollListView.get_queryset - User: {self.request.user.username if self.request.user.is_authenticated else 'Anonymous'}")
         logger.info(f"Total polls in database: {queryset.count()}")
         
-        # Show ALL polls to authenticated users regardless of status
-        # This ensures users can see all polls
-        if self.request.user.is_authenticated:
-            # Show all polls - no filtering
-            pass
-        else:
-            # Non-authenticated users only see public polls
-            queryset = queryset.filter(is_public=True)
-        
-        # Apply optional filters only if explicitly requested
-        category_id = self.request.GET.get('category')
-        if category_id:
-            queryset = queryset.filter(category_id=category_id)
-        
-        search_query = self.request.GET.get('search')
-        if search_query:
-            queryset = queryset.filter(
-                Q(title__icontains=search_query) |
-                Q(description__icontains=search_query) |
-                Q(tags__icontains=search_query)
-            )
+        # Show ALL polls to ALL users - no filtering at all
+        # This ensures everyone can see all polls
+        pass
         
         logger.info(f"Final queryset count: {queryset.count()}")
         logger.info(f"Queryset polls: {[poll.title for poll in queryset[:5]]}")
