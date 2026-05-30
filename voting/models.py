@@ -62,9 +62,11 @@ class Poll(models.Model):
         # Simple time comparison without timezone complexity
         try:
             if self.start_date and self.end_date:
-                if now < self.start_date:
+                # Use a small buffer (1 minute) to account for any time sync issues
+                buffer = timedelta(minutes=1)
+                if now < self.start_date - buffer:
                     return "Upcoming"
-                elif self.start_date <= now <= self.end_date:
+                elif self.start_date - buffer <= now <= self.end_date + buffer:
                     return "Active"
                 else:
                     return "Closed"
@@ -72,6 +74,43 @@ class Poll(models.Model):
                 return "Active"  # Default to active if no times set
         except Exception:
             return "Active"  # Default to active on any error
+
+    def get_time_display(self):
+        """Get human-readable time display (e.g., '2 days left', '3 hours ago')."""
+        now = timezone.now()
+        try:
+            if self.start_date and self.end_date:
+                if now < self.start_date:
+                    # Time until start
+                    delta = self.start_date - now
+                    return self._format_timedelta(delta, "left")
+                elif now > self.end_date:
+                    # Time since end
+                    delta = now - self.end_date
+                    return self._format_timedelta(delta, "ago")
+                else:
+                    # Time until end
+                    delta = self.end_date - now
+                    return self._format_timedelta(delta, "left")
+            else:
+                return "No time limit"
+        except Exception:
+            return "No time limit"
+
+    def _format_timedelta(self, delta, suffix):
+        """Format timedelta into human-readable string."""
+        total_seconds = int(delta.total_seconds())
+        if total_seconds < 60:
+            return f"{total_seconds} seconds {suffix}"
+        elif total_seconds < 3600:
+            minutes = total_seconds // 60
+            return f"{minutes} minute{'s' if minutes != 1 else ''} {suffix}"
+        elif total_seconds < 86400:
+            hours = total_seconds // 3600
+            return f"{hours} hour{'s' if hours != 1 else ''} {suffix}"
+        else:
+            days = total_seconds // 86400
+            return f"{days} day{'s' if days != 1 else ''} {suffix}"
 
     def get_total_votes(self):
         """Get the total number of votes for this poll."""

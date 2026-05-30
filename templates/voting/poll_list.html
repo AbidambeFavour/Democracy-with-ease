@@ -243,10 +243,6 @@
     </section>
 
     {% if polls %}
-        <!-- Debug: polls variable exists with {{ polls|length }} items -->
-        {% for poll in polls %}
-            <!-- Debug: poll {{ poll.title }} -->
-        {% endfor %}
         <section class="polls-grid" id="pollsGrid">
             {% for poll in polls %}
                 <article class="poll-card" data-url="{% url 'voting:poll_detail' poll.pk %}">
@@ -268,8 +264,7 @@
                     {% endif %}
 
                     <div class="poll-meta">
-                        <div class="meta-item"><i class="fas fa-play"></i> {% if poll.has_started %}Started{% else %}Starts{% endif %}: {{ poll.start_date|date:"M d, Y H:i" }}</div>
-                        <div class="meta-item"><i class="fas fa-stop"></i> Ends: {{ poll.end_date|date:"M d, Y H:i" }}</div>
+                        <div class="meta-item"><i class="fas fa-clock"></i> {{ poll.get_time_display }}</div>
                         <div class="meta-item"><i class="fas fa-user"></i> Created by {{ poll.creator.username|default:poll.creator }}</div>
                     </div>
 
