@@ -62,18 +62,32 @@ class Poll(models.Model):
         # Simple time comparison without timezone complexity
         try:
             if self.start_date and self.end_date:
-                # Use small buffer (30 seconds) only for start time to handle minor sync issues
-                # No buffer for end time - polls should close exactly when they should
-                start_buffer = timedelta(seconds=30)
-                if now < self.start_date - start_buffer:
+                # Log for debugging
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f"get_status - Poll: {self.title}")
+                logger.info(f"  now: {now}")
+                logger.info(f"  start_date: {self.start_date}")
+                logger.info(f"  end_date: {self.end_date}")
+                logger.info(f"  now < start_date: {now < self.start_date}")
+                logger.info(f"  start_date <= now <= end_date: {self.start_date <= now <= self.end_date}")
+                
+                # Remove buffer for precise time determination
+                if now < self.start_date:
+                    logger.info(f"  Status: Upcoming")
                     return "Upcoming"
-                elif self.start_date - start_buffer <= now <= self.end_date:
+                elif self.start_date <= now <= self.end_date:
+                    logger.info(f"  Status: Active")
                     return "Active"
                 else:
+                    logger.info(f"  Status: Closed")
                     return "Closed"
             else:
                 return "Active"  # Default to active if no times set
-        except Exception:
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error in get_status: {e}")
             return "Active"  # Default to active on any error
 
     def get_time_display(self):
