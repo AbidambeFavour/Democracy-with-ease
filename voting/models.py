@@ -62,11 +62,12 @@ class Poll(models.Model):
         # Simple time comparison without timezone complexity
         try:
             if self.start_date and self.end_date:
-                # Use a small buffer (1 minute) to account for any time sync issues
-                buffer = timedelta(minutes=1)
-                if now < self.start_date - buffer:
+                # Use small buffer (30 seconds) only for start time to handle minor sync issues
+                # No buffer for end time - polls should close exactly when they should
+                start_buffer = timedelta(seconds=30)
+                if now < self.start_date - start_buffer:
                     return "Upcoming"
-                elif self.start_date - buffer <= now <= self.end_date + buffer:
+                elif self.start_date - start_buffer <= now <= self.end_date:
                     return "Active"
                 else:
                     return "Closed"
