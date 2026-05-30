@@ -243,6 +243,10 @@
     </section>
 
     {% if polls %}
+        <!-- Debug: polls variable exists with {{ polls|length }} items -->
+        {% for poll in polls %}
+            <!-- Debug: poll {{ poll.title }} -->
+        {% endfor %}
         <section class="polls-grid" id="pollsGrid">
             {% for poll in polls %}
                 <article class="poll-card" data-url="{% url 'voting:poll_detail' poll.pk %}">
