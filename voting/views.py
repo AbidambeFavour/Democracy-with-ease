@@ -248,9 +248,10 @@ class CreatePollView(LoginRequiredMixin, View):
             )
             
             # Convert from user's local timezone to UTC
-            # timezone_offset is in minutes (negative for UTC+)
-            start_datetime = start_datetime - datetime.timedelta(minutes=timezone_offset)
-            end_datetime = end_datetime - datetime.timedelta(minutes=timezone_offset)
+            # timezone_offset is in minutes (negative for UTC+, positive for UTC-)
+            # To convert local to UTC: local_time + offset
+            start_datetime = start_datetime + datetime.timedelta(minutes=timezone_offset)
+            end_datetime = end_datetime + datetime.timedelta(minutes=timezone_offset)
             
             # Make timezone-aware as UTC
             start_datetime = timezone.make_aware(start_datetime, timezone.utc)
