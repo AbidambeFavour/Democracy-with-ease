@@ -234,17 +234,27 @@ class CreatePollView(LoginRequiredMixin, View):
         
         # Parse datetime fields
         try:
+            # Get user's timezone offset from form (in minutes)
+            timezone_offset = int(request.POST.get('timezone_offset', 0))
+            
+            # Parse as naive datetime (assumed to be in user's local timezone)
             start_datetime = datetime.datetime.strptime(
-                f"{start_date} {start_time}", 
+                f"{start_date} {start_time}",
                 "%Y-%m-%d %H:%M"
             )
             end_datetime = datetime.datetime.strptime(
-                f"{end_date} {end_time}", 
+                f"{end_date} {end_time}",
                 "%Y-%m-%d %H:%M"
             )
-            # Make timezone-aware using current timezone
-            start_datetime = timezone.make_aware(start_datetime)
-            end_datetime = timezone.make_aware(end_datetime)
+            
+            # Convert from user's local timezone to UTC
+            # timezone_offset is in minutes (negative for UTC+)
+            start_datetime = start_datetime - datetime.timedelta(minutes=timezone_offset)
+            end_datetime = end_datetime - datetime.timedelta(minutes=timezone_offset)
+            
+            # Make timezone-aware as UTC
+            start_datetime = timezone.make_aware(start_datetime, timezone.utc)
+            end_datetime = timezone.make_aware(end_datetime, timezone.utc)
         except (ValueError, TypeError):
             messages.error(request, "Invalid date or time format.")
             return self.get(request)
