@@ -81,21 +81,35 @@ class Poll(models.Model):
         now = timezone.now()
         try:
             if self.start_date and self.end_date:
+                # Log for debugging
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(f"get_time_display - Poll: {self.title}")
+                logger.info(f"  now: {now}")
+                logger.info(f"  start_date: {self.start_date}")
+                logger.info(f"  end_date: {self.end_date}")
+                
                 if now < self.start_date:
                     # Time until start
                     delta = self.start_date - now
+                    logger.info(f"  Time until start: {delta.total_seconds()} seconds")
                     return self._format_timedelta(delta, "left")
                 elif now > self.end_date:
                     # Time since end
                     delta = now - self.end_date
+                    logger.info(f"  Time since end: {delta.total_seconds()} seconds")
                     return self._format_timedelta(delta, "ago")
                 else:
                     # Time until end
                     delta = self.end_date - now
+                    logger.info(f"  Time until end: {delta.total_seconds()} seconds")
                     return self._format_timedelta(delta, "left")
             else:
                 return "No time limit"
-        except Exception:
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error in get_time_display: {e}")
             return "No time limit"
 
     def _format_timedelta(self, delta, suffix):
